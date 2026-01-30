@@ -1,0 +1,280 @@
+============================================================
+HONEY-POT API TEST SUITE
+============================================================
+
+--- Test 1: Health Check ---
+Health Check:
+{
+  "status": "healthy",
+  "timestamp": "2026-01-30T00:25:01.818858",
+  "model_trained": true,
+  "gemini_configured": true,
+  "active_sessions": 2,
+  "version": "2.0.0"
+}
+
+--- Test 2: Scam Message Detection ---
+
+First Scam Message Response:
+{
+  "status": "success",
+  "scamDetected": true,
+  "agentResponse": null,
+  "engagementMetrics": {
+    "engagementDurationSeconds": 90,
+    "totalMessagesExchanged": 9,
+    "currentPhase": "complete",
+    "phaseProgress": null
+  },
+  "extractedIntelligence": {
+    "bankAccounts": [],
+    "upiIds": [],
+    "phishingLinks": [
+      "www.bank-secure.com"
+    ],
+    "phoneNumbers": [
+      "9876543210",
+      "+91-9876543210"
+    ],
+    "suspiciousKeywords": [
+      "immediate",
+      "account",
+      "today",
+      "verify",
+      "block",
+      "share",
+      "bank",
+      "upi",
+      "locked"
+    ],
+    "emailAddresses": [],
+    "personNames": [],
+    "organizationNames": [],
+    "paymentPlatforms": [],
+    "socialMediaHandles": [],
+    "geographicIndicators": [],
+    "referenceNumbers": [],
+    "confidenceScores": null
+  },
+  "agentNotes": "Scam: UPI_Banking_Fraud | 9 msgs in 90s | Intel: 2 phone(s), 1 link(s) | Persona: curious_elder",
+  "engagementComplete": true,
+  "scamClassification": {
+    "scamType": "UPI_Banking_Fraud",
+    "confidence": 1.0,
+    "alternativeTypes": [
+      {
+        "Phishing": 0.6
+      },
+      {
+        "Link_Phishing": 0.5
+      }
+    ],
+    "tacticsIdentified": [
+      "fear_tactic"
+    ]
+  },
+  "threatAssessment": {
+    "level": "high",
+    "sophisticationScore": 1.0,
+    "indicators": [
+      "suspicious_link",
+      "immediate",
+      "account",
+      "today",
+      "block"
+    ],
+    "recommendation": null
+  },
+  "detectedLanguage": "English",
+  "responseDelay": null
+}
+
+--- Test 3: Follow-up Message ---
+
+Follow-up Message Response:
+{
+  "status": "success",
+  "scamDetected": true,
+  "agentResponse": null,
+  "engagementMetrics": {
+    "engagementDurationSeconds": 90,
+    "totalMessagesExchanged": 10,
+    "currentPhase": "complete",
+    "phaseProgress": null
+  },
+  "extractedIntelligence": {
+    "bankAccounts": [],
+    "upiIds": [],
+    "phishingLinks": [
+      "www.bank-secure.com"
+    ],
+    "phoneNumbers": [
+      "9876543210",
+      "+91-9876543210"
+    ],
+    "suspiciousKeywords": [
+      "immediate",
+      "account",
+      "block",
+      "verify",
+      "today",
+      "share",
+      "bank",
+      "upi",
+      "locked"
+    ],
+    "emailAddresses": [],
+    "personNames": [],
+    "organizationNames": [],
+    "paymentPlatforms": [],
+    "socialMediaHandles": [],
+    "geographicIndicators": [],
+    "referenceNumbers": [],
+    "confidenceScores": null
+  },
+  "agentNotes": "Scam: UPI_Banking_Fraud | 10 msgs in 90s | Intel: 2 phone(s), 1 link(s) | Persona: curious_elder",
+  "engagementComplete": true,
+  "scamClassification": {
+    "scamType": "UPI_Banking_Fraud",
+    "confidence": 0.9224998038092341,
+    "alternativeTypes": [],
+    "tacticsIdentified": [
+      "repeated_info_requests"
+    ]
+  },
+  "threatAssessment": {
+    "level": "medium",
+    "sophisticationScore": 1.0,
+    "indicators": [
+      "account",
+      "share",
+      "phone_number",
+      "repeated_info_requests",
+      "upi"
+    ],
+    "recommendation": null
+  },
+  "detectedLanguage": "English",
+  "responseDelay": null
+}
+
+--- Test 4: Legitimate Message ---
+
+Legitimate Message Response:
+{
+  "status": "success",
+  "scamDetected": true,
+  "agentResponse": "Sir ji, aap",
+  "engagementMetrics": {
+    "engagementDurationSeconds": 81,
+    "totalMessagesExchanged": 7,
+    "currentPhase": "compliance",
+    "phaseProgress": 0.8
+  },
+  "extractedIntelligence": {
+    "bankAccounts": [],
+    "upiIds": [],
+    "phishingLinks": [],
+    "phoneNumbers": [],
+    "suspiciousKeywords": [
+      "free",
+      "now"
+    ],
+    "emailAddresses": [],
+    "personNames": [],
+    "organizationNames": [],
+    "paymentPlatforms": [],
+    "socialMediaHandles": [],
+    "geographicIndicators": [],
+    "referenceNumbers": [],
+    "confidenceScores": null
+  },
+  "agentNotes": "Scam: General_Scam | 8 msgs in 84s | Persona: desperate_borrower",
+  "engagementComplete": false,
+  "scamClassification": {
+    "scamType": "General_Scam",
+    "confidence": 0.8596229119737145,
+    "alternativeTypes": [],
+    "tacticsIdentified": []
+  },
+  "threatAssessment": {
+    "level": "low",
+    "sophisticationScore": 1.0,
+    "indicators": [
+      "free",
+      "now"
+    ],
+    "recommendation": null
+  },
+  "detectedLanguage": "English",
+  "responseDelay": 1022
+}
+
+--- Test 5: Session Status ---
+
+Session Status (test-session-001):
+{
+  "sessionId": "test-session-001",
+  "scamDetected": true,
+  "scamType": "UPI_Banking_Fraud",
+  "scamConfidence": 1.0,
+  "threatLevel": "medium",
+  "persona": "curious_elder",
+  "engagementPhase": "complete",
+  "messagesExchanged": 10,
+  "engagementComplete": true,
+  "intelligenceQualityScore": 0.4,
+  "extractedIntelligence": {
+    "bankAccounts": [],
+    "upiIds": [],
+    "phishingLinks": [
+      "www.bank-secure.com"
+    ],
+    "phoneNumbers": [
+      "9876543210",
+      "+91-9876543210"
+    ],
+    "suspiciousKeywords": [
+      "immediate",
+      "account",
+      "block",
+      "verify",
+      "today",
+      "share",
+      "bank",
+      "upi",
+      "locked"
+    ],
+    "emailAddresses": [],
+    "personNames": [],
+    "organizationNames": [],
+    "paymentPlatforms": [],
+    "socialMediaHandles": [],
+    "geographicIndicators": [],
+    "referenceNumbers": [],
+    "confidenceScores": null
+  },
+  "analytics": {
+    "scammerEngagementLevel": 1.0,
+    "detectionRisk": 0.0,
+    "newInfoEmerging": true
+  },
+  "startTime": "2026-01-30T00:23:31.693912",
+  "lastActivity": "2026-01-30T00:25:02.412680",
+  "callbackSent": true
+}
+
+--- Test 6: Complete Engagement ---
+
+Complete Engagement (test-session-001):
+{
+  "status": "completed",
+  "sessionId": "test-session-001",
+  "callbackTriggered": true,
+  "callbackSuccess": true,
+  "summary": "Scam: UPI_Banking_Fraud | 10 msgs in 90s | Intel: 2 phone(s), 1 link(s) | Persona: curious_elder"
+}
+
+============================================================
+ALL TESTS COMPLETED
+============================================================

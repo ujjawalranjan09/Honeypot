@@ -1,0 +1,22 @@
+[
+  {"text": "Your electric power will be disconnected tonite at 9.30 pm from electricity officer because your previous month bill was not update. Please contact electricity officer 8899776655 immediately.", "label": "scam", "type": "Electricity_Bill_Scam"},
+  {"text": "Dear user your SBI YONO account will be blocked today. Please update your PAN card immediately click here: http://sbi-pan-update.com", "label": "scam", "type": "Banking_Fraud"},
+  {"text": "Congratulations! You have won Rs 25 Lakhs from KBC Lottery. Contact Rana Pratap Singh at +91-9988776655. Do not share with anyone.", "label": "scam", "type": "Lottery_Scam"},
+  {"text": "Work from home job opportunity. Earn Rs 5000 daily. Just like YouTube videos. Join Telegram: t.me/earnmoneyfast123", "label": "scam", "type": "Job_Scam"},
+  {"text": "Hi Dad, I lost my phone and wallet. I'm using a friend's phone. Please send Rs 10000 to this UPI: help.urgent@upi. I am in trouble.", "label": "scam", "type": "Family_Impersonation"},
+  {"text": "Your package has been detained at Mumbai Customs. You need to pay import duty of Rs 15000 or you will be arrested.", "label": "scam", "type": "Courior_Scam"},
+  {"text": "Urgent attention: Your Life Insurance Policy #987654321 is maturing today. To claim Rs 5 Lakh bonus, pay GST of Rs 12000.", "label": "scam", "type": "Insurance_Fraud"},
+  {"text": "Sextortion Warning: We have recorded your video. Pay Rs 50000 or we will upload it to Facebook and send to your contacts.", "label": "scam", "type": "Sextortion"},
+  {"text": "FedEx: Your parcel containing illegal items (Passports, Drugs) has been seized. Talk to potential cyber crime officer Dr. Roy.", "label": "scam", "type": "Courior_Scam"},
+  {"text": "Amazon: Your account is locked due to suspicious activity. Login to verify: http://amazon-security-verify.com", "label": "scam", "type": "Phishing"},
+  {"text": "Part time job: Rate hotels on Google maps and earn Rs 200 per review. Daily income 3k-5k. WhatsApp now.", "label": "scam", "type": "Job_Scam"},
+  {"text": "Credit Card Limit Increase: HDFC Bank offer. Convert limit to Rs 5 Lakh. No documentation required. Give OTP sent to your phone.", "label": "scam", "type": "Credit_Card_Scam"},
+  {"text": "Loan Approved: PB Partners pre-approved loan of Rs 2 Lakhs. Interest 2%. Processing fee Rs 1999 only. Pay now.", "label": "scam", "type": "Loan_Fraud"},
+  {"text": "5G Upgrade: SIM blocked in 24 hours if not upgraded to 5G. Click link to upgrade without changing SIM.", "label": "scam", "type": "Tech_Support_Scam"},
+  {"text": "Crypto Investment: Join our VIP group for 100x gains. Pump tonight. Guaranteed profit. No risk.", "label": "scam", "type": "Crypto_Fraud"},
+  {"text": "Hello, how are you?", "label": "legit", "type": "Chat"},
+  {"text": "Where are you going for dinner?", "label": "legit", "type": "Chat"},
+  {"text": "Can you send me the report by evening?", "label": "legit", "type": "Work"},
+  {"text": "Happy Birthday! Have a great year ahead.", "label": "legit", "type": "Social"},
+  {"text": "Your OTP for Zomato login is 3344. Do not share.", "label": "legit", "type": "Notification"}
+]

@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+gemini_error.log
+server_log.txt
+
+# Test outputs
+test_results_*.txt
+validation_results.txt
+*_output*.txt
+marathon_*.log
+*.jsonl
+
+# Debug files
+debug_*.py
+diag_*.py
+diag_output*.txt
+
+# Temporary scripts
+combine_*.py
+patcher.py
+update_timeouts.py
+fix_*.py
+
+# Model files
+*.pkl
+*.joblib
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pytest
+.pytest_cache/
+
+# Gemini folder
+.gemini/

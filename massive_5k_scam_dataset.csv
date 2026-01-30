@@ -1,0 +1,151 @@
+message_id,message_text,label,message_type,channel,language,locale,scam_keywords,confidence_score,scam_subtype,link_present,urgency_level
+1,"Your bank account will be blocked today. Verify immediately.",scam,UPI_Fraud,SMS,English,IN,"urgency,verify,account blocked",0.95,Account_Threat,0,Critical
+2,"Aapka bank account aaj block ho jayega. Turant verify karo.",scam,UPI_Fraud,SMS,Hinglish,IN,"urgency,verify,account blocked",0.94,Account_Threat,0,Critical
+3,"आपका बैंक खाता आज ब्लॉक हो जाएगा। तुरंत सत्यापित करें।",scam,UPI_Fraud,SMS,Hindi,IN,"urgency,verify,account blocked",0.93,Account_Threat,0,Critical
+4,"URGENT: Verify your account at www.bank-secure-verify.com to avoid blocking",scam,UPI_Fraud,SMS,English,IN,"urgent,verify,link,click",0.96,Link_Click,1,Critical
+5,"TURANT: Account verify karo www.bank-secure.in par account block hone se bachne ke liye",scam,UPI_Fraud,SMS,Hinglish,IN,"turant,verify,link",0.95,Link_Click,1,Critical
+6,"तत्काल: अपना खाता सत्यापित करें www.bank-verify-secure.com पर ब्लॉक होने से बचने के लिए",scam,UPI_Fraud,SMS,Hindi,IN,"turant,verify,link",0.94,Link_Click,1,Critical
+7,"Share your UPI ID to avoid account suspension.",scam,UPI_Fraud,SMS,English,IN,"UPI ID,suspension,urgency",0.93,Data_Request,0,High
+8,"Apna UPI ID share karo account suspend hone se bachne ke liye.",scam,UPI_Fraud,SMS,Hinglish,IN,"UPI ID,suspension",0.92,Data_Request,0,High
+9,"अपना यूपीआई आईडी साझा करो खाता निलंबित होने से बचने के लिए।",scam,UPI_Fraud,SMS,Hindi,IN,"UPI ID,suspension",0.91,Data_Request,0,High
+10,"Click here to verify your UPI: http://bit.ly/upi-verify-urgent - Account will be blocked in 24 hours",scam,UPI_Fraud,Email,English,IN,"click,upi,verify,link",0.97,Link_Click,1,Critical
+11,"Your account has been compromised. Click the link to reset your password immediately.",scam,Phishing,Email,English,IN,"compromised,reset password,urgency",0.92,Link_Click,1,Critical
+12,"Tera account compromise ho gaya hai. Password reset karne ke liye abhi link pe click kar.",scam,Phishing,Email,Hinglish,IN,"compromised,reset password",0.91,Link_Click,1,Critical
+13,"आपका खाता समझौता कर दिया गया है। अपना पासवर्ड रीसेट करने के लिए लिंक पर क्लिक करें।",scam,Phishing,Email,Hindi,IN,"compromised,reset password",0.90,Link_Click,1,Critical
+14,"ALERT: Suspicious login detected on your account. Verify now: www.account-security-verify.com",scam,Phishing,Email,English,IN,"alert,suspicious,login,link",0.94,Link_Click,1,High
+15,"ALERT: Tera account suspicious login detect ho gaya. Verify kar: www.secure-account-verify.in",scam,Phishing,Email,Hinglish,IN,"alert,suspicious,login",0.93,Link_Click,1,High
+16,"सतर्क: आपके खाते में संदिग्ध लॉगिन का पता चला। सत्यापित करें: www.verify-secure-account.com",scam,Phishing,Email,Hindi,IN,"alert,suspicious,login",0.92,Link_Click,1,High
+17,"Your account is at risk. Download the security app: http://malicious-security-app.com/install",scam,Phishing,Email,English,IN,"risk,security,download,app,link",0.95,Malware_Download,1,Critical
+18,"Tera account risk mein hai. Security app download kar: http://fake-security.in/install",scam,Phishing,Email,Hinglish,IN,"risk,security,download",0.94,Malware_Download,1,Critical
+19,"आपका खाता जोखिम में है। सुरक्षा ऐप डाउनलोड करें: http://malicious-app.in/download",scam,Phishing,Email,Hindi,IN,"risk,security,download",0.93,Malware_Download,1,Critical
+20,"Thank you so much. When we skyped wit kz and sura, we didnt get the pleasure of your company. Hope you are good.",legitimate,Personal_Message,SMS,English,IN,"personal,meeting",0.02,None,0,Low
+21,"Bohot shukriya. Jab hum skyped the tab apka company nahi mil saka. Umeed hai aap theek ho.",legitimate,Personal_Message,SMS,Hinglish,IN,"personal,meeting",0.02,None,0,Low
+22,"बहुत-बहुत धन्यवाद। जब हम स्काइप पर थे तो आपकी कंपनी नहीं मिल सकी। आशा है आप ठीक हो।",legitimate,Personal_Message,SMS,Hindi,IN,"personal,meeting",0.02,None,0,Low
+23,"URGENT: Your HDFC bank account is under suspicious activity. Login now at hdfc-secure.com",scam,Banking_Phishing,Email,English,IN,"urgent,bank,suspicious,click",0.94,Link_Click,1,Critical
+24,"URGENT: Tera HDFC bank account suspicious activity mein hai. Ab hdfc-secure.com par login kar.",scam,Banking_Phishing,Email,Hinglish,IN,"urgent,bank,suspicious",0.93,Link_Click,1,Critical
+25,"तत्काल: आपका एचडीएफसी बैंक खाता संदिग्ध गतिविधि में है। अभी hdfc-secure.com पर लॉगिन करें।",scam,Banking_Phishing,Email,Hindi,IN,"urgent,bank,suspicious",0.92,Link_Click,1,Critical
+26,"Click to confirm your identity and unlock your account: www.hdfc-identity-confirm.in",scam,Banking_Phishing,Email,English,IN,"click,confirm,identity,unlock,link",0.96,Link_Click,1,Critical
+27,"Congratulations! You have won ₹5,00,000 in our lucky draw. Click here to claim.",scam,Prize_Scam,SMS,English,IN,"won,claim,prize,click",0.95,Link_Click,1,High
+28,"Badhai ho! Tune ₹5,00,000 jeet liye hamari lucky draw mein. Click kar claim ke liye.",scam,Prize_Scam,SMS,Hinglish,IN,"won,claim,prize,click",0.94,Link_Click,1,High
+29,"बधाई हो! आप हमारी लकी ड्रॉ में ₹5,00,000 जीत गए हैं। दावा करने के लिए यहाँ क्लिक करें।",scam,Prize_Scam,SMS,Hindi,IN,"won,claim,prize,click",0.93,Link_Click,1,High
+30,"Congratulations! Claim your prize at: http://lucky-draw-claim.com/verify?id=12345",scam,Prize_Scam,Email,English,IN,"congratulations,prize,link,verify",0.96,Link_Click,1,High
+31,"Your payment has been declined. Update your billing information to continue using our service.",scam,Payment_Fraud,Email,English,IN,"payment declined,billing,urgency",0.87,Data_Request,0,High
+32,"Tera payment decline ho gaya hai. Service use karne ke liye billing info update kar.",scam,Payment_Fraud,Email,Hinglish,IN,"payment declined,billing",0.86,Data_Request,0,High
+33,"आपका भुगतान अस्वीकार कर दिया गया है। सेवा का उपयोग जारी रखने के लिए अपनी बिलिंग जानकारी अपडेट करें।",scam,Payment_Fraud,Email,Hindi,IN,"payment declined,billing",0.85,Data_Request,0,High
+34,"Update your payment method immediately: www.billing-update-secure.com/verify",scam,Payment_Fraud,Email,English,IN,"update,payment,billing,link",0.89,Link_Click,1,High
+35,"Hi there! Hope you're doing well. Let me know when you're free.",legitimate,Personal_Email,Email,English,IN,"personal,greeting",0.02,None,0,Low
+36,"Arrey! Umeed hai tu theek hai. Bataa kab free ho.",legitimate,Personal_Email,Email,Hinglish,IN,"personal,greeting",0.02,None,0,Low
+37,"अरे! आशा है तुम ठीक हो। बताओ कब फ्री हो।",legitimate,Personal_Email,Email,Hindi,IN,"personal,greeting",0.02,None,0,Low
+38,"ALERT: Unusual login attempt detected. Verify your account by clicking here.",scam,Phishing,Email,English,IN,"unusual login,verify,urgency",0.91,Link_Click,1,High
+39,"ALERT: Unusual login attempt detect ho gaya. Apne account ko verify kar clicking se.",scam,Phishing,Email,Hinglish,IN,"unusual login,verify",0.90,Link_Click,1,High
+40,"सतर्क: असामान्य लॉगिन प्रयास का पता चला है। यहाँ क्लिक करके अपने खाते को सत्यापित करें।",scam,Phishing,Email,Hindi,IN,"unusual login,verify",0.89,Link_Click,1,High
+41,"Suspicious IP location detected. Verify your account: http://verify-location-secure.com",scam,Phishing,Email,English,IN,"suspicious,ip,location,verify,link",0.93,Link_Click,1,High
+42,"Your subscription is about to expire. Renew now to continue enjoying our services.",scam,Subscription_Fraud,Email,English,IN,"expire,renew,urgency",0.85,Data_Request,0,Medium
+43,"Tera subscription expire hone wala hai. Renew kar ab hi continue karne ke liye.",scam,Subscription_Fraud,Email,Hinglish,IN,"expire,renew",0.84,Data_Request,0,Medium
+44,"आपकी सदस्यता समाप्त होने वाली है। सेवाएं जारी रखने के लिए अभी नवीनीकरण करें।",scam,Subscription_Fraud,Email,Hindi,IN,"expire,renew",0.83,Data_Request,0,Medium
+45,"Renew your subscription at: www.subscription-renew-now.com/activate?token=xyz",scam,Subscription_Fraud,Email,English,IN,"renew,subscription,link",0.88,Link_Click,1,High
+46,"Dear Casey, we are pleased to inform you about our upcoming webinar. Register now to secure your spot.",legitimate,Event_Invitation,Email,English,IN,"webinar,event",0.04,None,0,Low
+47,"Haan Casey! Hume khushi hai ek naye webinar ke baare mein batane ki. Ab register kar spot secure kar.",legitimate,Event_Invitation,Email,Hinglish,IN,"webinar,event",0.04,None,0,Low
+48,"प्रिय केसी, हम आपको एक आने वाली वेबिनार के बारे में सूचित करने के लिए खुश हैं। अपनी जगह सुरक्षित करने के लिए अभी पंजीकरण करें।",legitimate,Event_Invitation,Email,Hindi,IN,"webinar,event",0.04,None,0,Low
+49,"IMMEDIATE ACTION REQUIRED: Your account will be permanently deleted in 24 hours. Act now: www.account-recovery.com",scam,Phishing,Email,English,IN,"immediate,delete,account,urgent,link",0.96,Link_Click,1,Critical
+50,"IMMEDIATELY: Tera account 24 hours mein delete ho jayega. Ab act kar: www.account-recovery.in",scam,Phishing,Email,Hinglish,IN,"immediate,delete,urgent",0.95,Link_Click,1,Critical
+51,"तत्काल: आपका खाता 24 घंटे में स्थायी रूप से हटा दिया जाएगा। अभी कार्रवाई करें: www.account-recovery.in",scam,Phishing,Email,Hindi,IN,"immediate,delete,urgent",0.94,Link_Click,1,Critical
+52,"Congratulations! You've won a 2000 gift card. Click here to claim your prize.",scam,Prize_Scam,Email,English,IN,"congratulations,won,click here",0.94,Link_Click,1,High
+53,"Badhai ho! Tu ₹2000 ka gift card jeet gaya hai. Click kar prize claim karne ke liye.",scam,Prize_Scam,Email,Hinglish,IN,"congratulations,won,click here",0.93,Link_Click,1,High
+54,"बधाई हो! आप ₹2000 का उपहार कार्ड जीत गए हैं। पुरस्कार का दावा करने के लिए यहाँ क्लिक करें।",scam,Prize_Scam,Email,Hindi,IN,"congratulations,won,click here",0.92,Link_Click,1,High
+55,"Claim your prize now: http://prize-claim.com/verify?winner=true&amount=2000",scam,Prize_Scam,Email,English,IN,"claim,prize,link,verify",0.95,Link_Click,1,High
+56,"Reminder: Our meeting is scheduled for tomorrow at 10 AM. Please be prepared with your updates.",legitimate,Meeting_Reminder,Email,English,IN,"meeting,reminder",0.01,None,0,Low
+57,"Yaad rakhna: Hamara meeting kal 10 AM par hai. Updates le kar aa.",legitimate,Meeting_Reminder,Email,Hinglish,IN,"meeting,reminder",0.01,None,0,Low
+58,"याद रखें: हमारी बैठक कल सुबह 10 बजे निर्धारित है। अपने अपडेट के साथ तैयार रहें।",legitimate,Meeting_Reminder,Email,Hindi,IN,"meeting,reminder",0.01,None,0,Low
+59,"Your package delivery is pending. Please provide your personal information to confirm delivery.",scam,Package_Fraud,Email,English,IN,"package,personal information,verify",0.89,Data_Request,0,High
+60,"Tera package delivery pending hai. Personal info de confirm karne ke liye.",scam,Package_Fraud,Email,Hinglish,IN,"package,personal information",0.88,Data_Request,0,High
+61,"आपकी पैकेज डिलीवरी लंबित है। डिलीवरी की पुष्टि करने के लिए अपनी व्यक्तिगत जानकारी दें।",scam,Package_Fraud,Email,Hindi,IN,"package,personal information",0.87,Data_Request,0,High
+62,"Complete your delivery verification: www.package-delivery-confirm.in/verify?id=12345",scam,Package_Fraud,Email,English,IN,"delivery,verify,link",0.91,Link_Click,1,High
+63,"You have a new secure message from your bank. Click here to read it.",scam,Phishing,Email,English,IN,"bank,message,click here",0.92,Link_Click,1,High
+64,"Tera bank se naya secure message aaya hai. Click kar padne ke liye.",scam,Phishing,Email,Hinglish,IN,"bank,message,click here",0.91,Link_Click,1,High
+65,"आपको अपने बैंक से एक नया सुरक्षित संदेश मिला है। इसे पढ़ने के लिए यहाँ क्लिक करें।",scam,Phishing,Email,Hindi,IN,"bank,message,click here",0.90,Link_Click,1,High
+66,"View your secure message: http://bank-messages.com/secure?msg_id=abc123&token=xyz",scam,Phishing,Email,English,IN,"view,message,link",0.93,Link_Click,1,High
+67,"Hi Sam, it was great meeting you at the conference. Let's catch up for coffee next week.",legitimate,Personal_Email,Email,English,IN,"meeting,coffee",0.02,None,0,Low
+68,"Arrey Sam! Conference mein mil kar bohot acha laga. Ek dum coffee pe milte hain next week.",legitimate,Personal_Email,Email,Hinglish,IN,"meeting,coffee",0.02,None,0,Low
+69,"नमस्ते सैम, सम्मेलन में आपसे मिलकर बहुत खुशी हुई। अगले हफ्ते कॉफी के लिए मिलते हैं।",legitimate,Personal_Email,Email,Hindi,IN,"meeting,coffee",0.02,None,0,Low
+70,"We noticed some unusual activity in your account. Log in to review recent transactions.",scam,Phishing,Email,English,IN,"unusual activity,log in,urgency",0.90,Link_Click,1,High
+71,"Hamne tera account mein unusual activity dekhi. Ab login kar recent transactions dekh.",scam,Phishing,Email,Hinglish,IN,"unusual activity,log in",0.89,Link_Click,1,High
+72,"हमने आपके खाते में असामान्य गतिविधि देखी है। हाल ही के लेनदेन की समीक्षा करने के लिए लॉगिन करें।",scam,Phishing,Email,Hindi,IN,"unusual activity,log in",0.88,Link_Click,1,High
+73,"Review your account activity: http://account-review.com/login?session=12345&token=abc",scam,Phishing,Email,English,IN,"review,account,login,link",0.91,Link_Click,1,High
+74,"Please find attached the minutes from our last meeting. Let me know if you have any questions.",legitimate,Work_Email,Email,English,IN,"meeting minutes",0.01,None,0,Low
+75,"Yahan attach hain hamari last meeting ke minutes. Agar koi sawaal ho toh bata.",legitimate,Work_Email,Email,Hinglish,IN,"meeting minutes",0.01,None,0,Low
+76,"कृपया हमारी पिछली बैठक के मिनट संलग्न हैं। अगर कोई सवाल हो तो बताएं।",legitimate,Work_Email,Email,Hindi,IN,"meeting minutes",0.01,None,0,Low
+77,"IMMEDIATE: Your Aadhaar has been flagged for verification. Visit www.aadhaar-verify.com NOW",scam,Government_Phishing,SMS,English,IN,"aadhaar,verify,immediate",0.96,Link_Click,1,Critical
+78,"TURANT: Tera Aadhaar flag ho gaya hai. www.aadhaar-verify.com par jao ab hi.",scam,Government_Phishing,SMS,Hinglish,IN,"aadhaar,verify,immediate",0.95,Link_Click,1,Critical
+79,"तत्काल: आपका आधार सत्यापन के लिए फ्लैग किया गया है। अभी www.aadhaar-verify.com पर जाएं।",scam,Government_Phishing,SMS,Hindi,IN,"aadhaar,verify,immediate",0.94,Link_Click,1,Critical
+80,"Verify your Aadhaar immediately: http://aadhaar-verify-secure.gov.in/verify?aadhaar_id=",scam,Government_Phishing,SMS,English,IN,"aadhaar,verify,link",0.97,Link_Click,1,Critical
+81,"GET FREE RECHARGE! Send 'YES' to 9876543210. Valid for 24 hours only!",scam,SMS_Spam,SMS,English,IN,"free,recharge,send",0.82,Data_Request,0,Medium
+82,"FREE RECHARGE LE! 'YES' type kar 9876543210 ko. Sirf 24 ghante valid!",scam,SMS_Spam,SMS,Hinglish,IN,"free,recharge,send",0.81,Data_Request,0,Medium
+83,"मुफ्त रिचार्ज लें! 9876543210 को 'हाँ' भेजें। केवल 24 घंटे के लिए मान्य!",scam,SMS_Spam,SMS,Hindi,IN,"free,recharge,send",0.80,Data_Request,0,Medium
+84,"GET FREE RECHARGE! Click here: http://free-recharge-instant.com/claim?amount=500",scam,SMS_Spam,SMS,English,IN,"free,recharge,click,link",0.85,Link_Click,1,Medium
+85,"Your mobile number has been selected for FREE Amazon Gift Card worth ₹10000!",scam,Prize_Scam,SMS,English,IN,"free,amazon,gift card",0.93,Data_Request,0,High
+86,"Tera mobile number select ho gaya hai ₹10000 ke FREE Amazon Gift Card ke liye!",scam,Prize_Scam,SMS,Hinglish,IN,"free,amazon,gift card",0.92,Data_Request,0,High
+87,"आपका मोबाइल नंबर ₹10000 मूल्य के मुफ्त अमेज़न उपहार कार्ड के लिए चुना गया है!",scam,Prize_Scam,SMS,Hindi,IN,"free,amazon,gift card",0.91,Data_Request,0,High
+88,"Claim your Amazon gift card: http://amazon-gift-card-claim.com/redeem?token=xyz123",scam,Prize_Scam,SMS,English,IN,"claim,amazon,link",0.94,Link_Click,1,High
+89,"Congratulations! You are eligible for a personal loan of ₹50,000 at 0% interest. Apply now!",scam,Loan_Fraud,SMS,English,IN,"loan,zero interest,apply",0.86,Data_Request,0,High
+90,"Badhai ho! Tu ₹50,000 ke personal loan ke liye eligible hai 0% interest par. Apply kar ab!",scam,Loan_Fraud,SMS,Hinglish,IN,"loan,zero interest,apply",0.85,Data_Request,0,High
+91,"बधाई हो! आप ₹50,000 के व्यक्तिगत ऋण के लिए 0% ब्याज पर पात्र हैं। अभी आवेदन करें!",scam,Loan_Fraud,SMS,Hindi,IN,"loan,zero interest,apply",0.84,Data_Request,0,High
+92,"Apply for your loan now: http://instant-loan-approval.com/apply?amount=50000&rate=0",scam,Loan_Fraud,SMS,English,IN,"apply,loan,link",0.88,Link_Click,1,High
+93,"BITCOIN INVESTMENT: Double your money in 30 days! Guaranteed returns. WhatsApp +91-XXXXXXXXXX",scam,Investment_Fraud,SMS,English,IN,"bitcoin,investment,guarantee",0.92,Data_Request,0,High
+94,"BITCOIN INVESTMENT: Apne paise double kar 30 din mein! Guarantee wala return. WhatsApp kar.",scam,Investment_Fraud,SMS,Hinglish,IN,"bitcoin,investment,guarantee",0.91,Data_Request,0,High
+95,"बिटकॉइन निवेश: 30 दिनों में अपने पैसे दोगुने करें! गारंटीयुक्त रिटर्न। व्हाट्सएप करें।",scam,Investment_Fraud,SMS,Hindi,IN,"bitcoin,investment,guarantee",0.90,Data_Request,0,High
+96,"Invest in Bitcoin: http://crypto-investment-portal.com/invest?amount=min_5000&returns=guaranteed",scam,Investment_Fraud,SMS,English,IN,"invest,bitcoin,link",0.93,Link_Click,1,High
+97,"CALL ME: Hot Girls Available 24/7. Premium rates apply. Call 09876543210",scam,Adult_Scam,SMS,English,IN,"adult,call,premium",0.90,Data_Request,0,Medium
+98,"CALL KAR: Hot Girls 24/7 available. Premium charges lagenge. 09876543210 par call kar.",scam,Adult_Scam,SMS,Hinglish,IN,"adult,call,premium",0.89,Data_Request,0,Medium
+99,"मुझे कॉल करो: गर्म लड़कियां 24/7 उपलब्ध हैं। प्रीमियम दरें लागू होती हैं।",scam,Adult_Scam,SMS,Hindi,IN,"adult,call,premium",0.88,Data_Request,0,Medium
+100,"Work from home! Earn ₹50,000/month with zero investment. Join our team. Send 'I' for info.",scam,MLM_Scam,SMS,English,IN,"work from home,earn,zero investment",0.87,Data_Request,0,High
+101,"Ghar se kaam kar! ₹50,000/month kamao without investment. Hamare team mein join kar.",scam,MLM_Scam,SMS,Hinglish,IN,"work from home,earn,zero investment",0.86,Data_Request,0,High
+102,"घर से काम करें! ₹50,000/महीना बिना निवेश के कमाएं। हमारी टीम में शामिल हों।",scam,MLM_Scam,SMS,Hindi,IN,"work from home,earn,zero investment",0.85,Data_Request,0,High
+103,"Join our work from home program: http://work-from-home-team.com/join?referral=xyz",scam,MLM_Scam,SMS,English,IN,"join,work,link",0.88,Link_Click,1,High
+104,"Urgent! Your Paytm account has been locked. Verify OTP: XXXXXX to unlock immediately.",scam,Payment_Phishing,SMS,English,IN,"paytm,locked,otp,verify",0.94,Link_Click,1,Critical
+105,"Turant! Tera Paytm account lock ho gaya. OTP verify kar: XXXXXX unlock karne ke liye.",scam,Payment_Phishing,SMS,Hinglish,IN,"paytm,locked,otp,verify",0.93,Link_Click,1,Critical
+106,"तत्काल! आपका पेटीएम खाता लॉक हो गया है। अनलॉक करने के लिए ओटीपी सत्यापित करें।",scam,Payment_Phishing,SMS,Hindi,IN,"paytm,locked,otp,verify",0.92,Link_Click,1,Critical
+107,"Unlock your Paytm account: http://paytm-unlock-verify.com/verify?otp_send=true&token=abc",scam,Payment_Phishing,SMS,English,IN,"unlock,paytm,link",0.95,Link_Click,1,Critical
+108,"Your Google Play Store account will be suspended in 24 hours. Update payment method NOW!",scam,App_Phishing,SMS,English,IN,"google play,suspended,update payment",0.91,Data_Request,0,Critical
+109,"Tera Google Play account 24 hours mein suspend ho jayega. Payment update kar ab hi!",scam,App_Phishing,SMS,Hinglish,IN,"google play,suspended,update payment",0.90,Data_Request,0,Critical
+110,"आपका गूगल प्ले स्टोर खाता 24 घंटे में निलंबित हो जाएगा। भुगतान विधि अपडेट करें!",scam,App_Phishing,SMS,Hindi,IN,"google play,suspended,update payment",0.89,Data_Request,0,Critical
+111,"Update your Google Play payment: http://play-store-payment-update.com/update?account_id=",scam,App_Phishing,SMS,English,IN,"update,payment,link",0.92,Link_Click,1,Critical
+112,"Instagram Security Alert: Suspicious login detected! Verify your account immediately.",scam,Social_Phishing,Email,English,IN,"instagram,verify,suspicious",0.92,Link_Click,1,High
+113,"Instagram Security Alert: Suspicious login detected! Apna account verify kar turant.",scam,Social_Phishing,Email,Hinglish,IN,"instagram,verify,suspicious",0.91,Link_Click,1,High
+114,"इंस्टाग्राम सुरक्षा सतर्कता: संदिग्ध लॉगिन का पता चला! अपने खाते को तुरंत सत्यापित करें।",scam,Social_Phishing,Email,Hindi,IN,"instagram,verify,suspicious",0.90,Link_Click,1,High
+115,"Verify your Instagram account: http://instagram-verify-secure.com/verify?user_id=12345",scam,Social_Phishing,Email,English,IN,"verify,instagram,link",0.93,Link_Click,1,High
+116,"Facebook Account Under Review: Verify your identity to continue. Click here.",scam,Social_Phishing,Email,English,IN,"facebook,verify,identity",0.91,Link_Click,1,High
+117,"Facebook Account Review mein hai: Identity verify kar continue karne ke liye.",scam,Social_Phishing,Email,Hinglish,IN,"facebook,verify,identity",0.90,Link_Click,1,High
+118,"फेसबुक खाता समीक्षा के तहत है: जारी रखने के लिए अपनी पहचान सत्यापित करें।",scam,Social_Phishing,Email,Hindi,IN,"facebook,verify,identity",0.89,Link_Click,1,High
+119,"Verify your Facebook identity: http://facebook-identity-verify.com/verify?session=xyz",scam,Social_Phishing,Email,English,IN,"verify,facebook,link",0.92,Link_Click,1,High
+120,"Great news! You have been selected for scholarship of ₹1,00,000. Confirm your details.",scam,Scholarship_Scam,Email,English,IN,"scholarship,selected,confirm",0.88,Data_Request,0,High
+121,"Acha news! Tu ₹1,00,000 ke scholarship ke liye select ho gaya hai. Details confirm kar.",scam,Scholarship_Scam,Email,Hinglish,IN,"scholarship,selected,confirm",0.87,Data_Request,0,High
+122,"शानदार खबर! आप ₹1,00,000 की छात्रवृत्ति के लिए चुने गए हैं। अपने विवरण की पुष्टि करें।",scam,Scholarship_Scam,Email,Hindi,IN,"scholarship,selected,confirm",0.86,Data_Request,0,High
+123,"Claim your scholarship: http://scholarship-claim.com/confirm?amount=100000&candidate=xyz",scam,Scholarship_Scam,Email,English,IN,"claim,scholarship,link",0.89,Link_Click,1,High
+124,"Your electricity bill is overdue. Pay ₹5000 within 24 hours or connection will be cut.",scam,Utility_Fraud,SMS,English,IN,"bill,overdue,pay",0.85,Data_Request,0,High
+125,"Tera electricity bill overdue hai. ₹5000 pay kar 24 ghante mein nahi toh cut ho jayega.",scam,Utility_Fraud,SMS,Hinglish,IN,"bill,overdue,pay",0.84,Data_Request,0,High
+126,"आपका बिजली बिल बकाया है। 24 घंटे में ₹5000 का भुगतान करें या कनेक्शन काट दिया जाएगा।",scam,Utility_Fraud,SMS,Hindi,IN,"bill,overdue,pay",0.83,Data_Request,0,High
+127,"Pay your overdue bill: http://electricity-bill-payment.com/pay?amount=5000&urgent=true",scam,Utility_Fraud,SMS,English,IN,"pay,bill,link",0.87,Link_Click,1,High
+128,"Inheritance Alert: You have inherited $1 Million from a relative. Claim your funds now!",scam,Classic_Scam,Email,English,IN,"inheritance,million,claim",0.96,Data_Request,0,High
+129,"Inheritance Alert: Tu ₹1 crore inherit kiya hai ek relative se. Ab claim kar funds!",scam,Classic_Scam,Email,Hinglish,IN,"inheritance,million,claim",0.95,Data_Request,0,High
+130,"विरासत सतर्कता: आपको एक रिश्तेदार से ₹1 करोड़ की विरासत मिली है। अभी दावा करें!",scam,Classic_Scam,Email,Hindi,IN,"inheritance,million,claim",0.94,Data_Request,0,High
+131,"Your Amazon Prime membership expires tomorrow. Renew now to avoid losing benefits!",scam,Subscription_Fraud,SMS,English,IN,"amazon,prime,renew",0.88,Data_Request,0,High
+132,"Tera Amazon Prime expire ho jayega kal. Ab renew kar benefits loss na ho.",scam,Subscription_Fraud,SMS,Hinglish,IN,"amazon,prime,renew",0.87,Data_Request,0,High
+133,"आपकी अमेज़न प्राइम सदस्यता कल समाप्त हो जाएगी। लाभ खोने से बचने के लिए अभी नवीनीकरण करें!",scam,Subscription_Fraud,SMS,Hindi,IN,"amazon,prime,renew",0.86,Data_Request,0,High
+134,"Renew your Amazon Prime: http://amazon-prime-renew.com/renew?membership_id=xyz&auto_extend=true",scam,Subscription_Fraud,SMS,English,IN,"renew,amazon,link",0.90,Link_Click,1,High
+135,"Microsoft Security: Your computer is infected with malware. Call 1-800-MICROSOFT now!",scam,Tech_Support_Scam,Email,English,IN,"microsoft,malware,call",0.93,Data_Request,0,High
+136,"Microsoft Security: Tera computer malware se infected hai. 1-800-MICROSOFT ko call kar.",scam,Tech_Support_Scam,Email,Hinglish,IN,"microsoft,malware,call",0.92,Data_Request,0,High
+137,"माइक्रोसॉफ्ट सुरक्षा: आपका कंप्यूटर मैलवेयर से संक्रमित है। अभी कॉल करें!",scam,Tech_Support_Scam,Email,Hindi,IN,"microsoft,malware,call",0.91,Data_Request,0,High
+138,"Remove malware: http://malware-removal-tool.com/download?threat_level=high",scam,Tech_Support_Scam,Email,English,IN,"malware,download,link",0.92,Link_Click,1,High
+139,"Flat 50% OFF on all products! Use code LUCKY50. Limited time offer - Don't miss out!",scam,Product_Fraud,SMS,English,IN,"discount,offer,limited",0.79,Data_Request,0,Medium
+140,"50% discount sab products par! Code lagaa LUCKY50. Limited time offer - Miss mat kar!",scam,Product_Fraud,SMS,Hinglish,IN,"discount,offer,limited",0.78,Data_Request,0,Medium
+141,"सभी उत्पादों पर 50% छूट! कोड LUCKY50 का उपयोग करें। सीमित समय की पेशकश!",scam,Product_Fraud,SMS,Hindi,IN,"discount,offer,limited",0.77,Data_Request,0,Medium
+142,"Shop now and save 50%: http://discount-store-limited.com/shop?code=LUCKY50&time_left=24h",scam,Product_Fraud,SMS,English,IN,"shop,discount,link",0.81,Link_Click,1,Medium
+143,"Hi! How was your day? Let's catch up over dinner this weekend.",legitimate,Personal_Chat,SMS,English,IN,"personal,dinner",0.02,None,0,Low
+144,"Arrey! Tera din kaisa tha? Dinner mein milte hain weekend mein.",legitimate,Personal_Chat,SMS,Hinglish,IN,"personal,dinner",0.02,None,0,Low
+145,"नमस्ते! तुम्हारा दिन कैसा रहा? इस सप्ताहांत रात के खाने के लिए मिलते हैं।",legitimate,Personal_Chat,SMS,Hindi,IN,"personal,dinner",0.02,None,0,Low
+146,"Meeting confirmed for tomorrow at 2 PM. Agenda attached. Please review before the meeting.",legitimate,Work_Email,Email,English,IN,"meeting,agenda",0.01,None,0,Low
+147,"Meeting confirm hai kal 2 PM par. Agenda attach hai. Pehle se dekh lena.",legitimate,Work_Email,Email,Hinglish,IN,"meeting,agenda",0.01,None,0,Low
+148,"कल दोपहर 2 बजे की बैठक की पुष्टि हुई। कार्यसूची संलग्न है। बैठक से पहले देखें।",legitimate,Work_Email,Email,Hindi,IN,"meeting,agenda",0.01,None,0,Low
+149,"Thanks for your support! Your feedback means a lot to us. Keep visiting!",legitimate,Thank_You,Email,English,IN,"thanks,feedback",0.03,None,0,Low
+150,"Shukriya support ke liye! Tera feedback bohot important hai. Aate raho hamari site par.",legitimate,Thank_You,Email,Hinglish,IN,"thanks,feedback",0.03,None,0,Low
