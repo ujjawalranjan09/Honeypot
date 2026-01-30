@@ -141,7 +141,7 @@ class ScamDetector:
                     df.rename(columns={'text': 'message_text'}, inplace=True)
             
             elif os.path.exists(dataset_path):
-                df = pd.read_csv(dataset_path)
+                df = pd.read_csv("massive_20k_scam_dataset.csv")
             
             if df is None:
                 logger.error("No dataset found for training.")
