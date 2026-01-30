@@ -6,8 +6,9 @@ An AI-powered honeypot system that detects scam intent and autonomously engages 
 
 - **Scam Detection**: Hybrid ML + rule-based detection for English, Hindi, and Hinglish
 - **Multi-turn Conversations**: Maintains context across conversation sessions
-- **AI Agent Personas**: Three distinct personas (naive victim, curious elder, busy professional)
+- **AI Agent Personas**: 6 distinct personas with Hinglish/localized support
 - **Intelligence Extraction**: Extracts phone numbers, UPI IDs, bank accounts, phishing links
+- **Multi-Model Fallback**: Robust queue-based system using 15+ models (Llama 3.3, Gemini, Qwen, etc.)
 - **GUVI Callback**: Automatically reports results to GUVI evaluation endpoint
 - **REST API**: Production-ready FastAPI with authentication
 
@@ -40,7 +41,8 @@ copy .env.example .env
 2. Update `.env` with your keys:
 ```env
 HONEYPOT_API_KEY=your-secret-api-key-here
-GEMINI_API_KEY=your-gemini-api-key-here
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free
 ```
 
 ## 🏃 Running the API
@@ -65,7 +67,7 @@ GET /api/health
 ### Process Message (Main Endpoint)
 ```http
 POST /api/message
-x-api-key: YOUR_SECRET_API_KEY
+X-API-Key: YOUR_SECRET_API_KEY
 Content-Type: application/json
 
 {
@@ -87,37 +89,38 @@ Content-Type: application/json
 ### Get Session Status
 ```http
 GET /api/session/{session_id}
-x-api-key: YOUR_SECRET_API_KEY
+X-API-Key: YOUR_SECRET_API_KEY
 ```
 
 ### Complete Engagement (Trigger Callback)
 ```http
 POST /api/complete/{session_id}
-x-api-key: YOUR_SECRET_API_KEY
+X-API-Key: YOUR_SECRET_API_KEY
 ```
 
 ### Train Model
 ```http
 POST /api/train
-x-api-key: YOUR_SECRET_API_KEY
+X-API-Key: YOUR_SECRET_API_KEY
 ```
 
 ### Get Statistics
 ```http
 GET /api/stats
-x-api-key: YOUR_SECRET_API_KEY
+X-API-Key: YOUR_SECRET_API_KEY
 ```
 
-## 📊 Response Format
+## 📊 Response Format (GUVI Compliant)
 
 ```json
 {
   "status": "success",
   "scamDetected": true,
-  "agentResponse": "Oh dear, what happened to my account? Please help me.",
+  "reply": "Oh dear, what happened to my account? Please help me.",
   "engagementMetrics": {
     "engagementDurationSeconds": 120,
-    "totalMessagesExchanged": 4
+    "totalMessagesExchanged": 4,
+    "currentPhase": "compliance"
   },
   "extractedIntelligence": {
     "bankAccounts": [],
@@ -134,8 +137,8 @@ x-api-key: YOUR_SECRET_API_KEY
 ## 🧪 Testing
 
 ```bash
-# Start the server first, then run tests
-python test_api.py
+# Run the end-to-end validation test
+python final_validation_test.py
 ```
 
 ## 🏗️ Project Structure
