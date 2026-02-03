@@ -10,6 +10,7 @@ from typing import Optional, Dict
 from collections import defaultdict
 
 from fastapi import FastAPI, HTTPException, Header, Depends, BackgroundTasks, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
@@ -233,6 +234,26 @@ async def honeypot_exception_handler(request: Request, exc: HoneypotException):
     )
 
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle FastAPI validation errors with custom response"""
+    body = await request.body()
+    log_with_context(
+        logger, logging.WARNING,
+        f"Validation error: {str(exc)}",
+        path=request.url.path,
+        body=body.decode()[:500] if body else "None"
+    )
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "VALIDATION_ERROR",
+            "message": "Invalid request body format",
+            "details": exc.errors(),
+        }
+    )
+
+
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions"""
@@ -297,6 +318,7 @@ async def model_status(x_api_key: str = Header(None)):
 
 
 @app.post("/api/message", response_model=APIResponse, tags=["Core"])
+@app.post("//api/message", response_model=APIResponse, include_in_schema=False)
 async def process_message(
     request_body: IncomingRequest,
     request: Request,
@@ -314,8 +336,14 @@ async def process_message(
     4. Tracks the engagement session
     """
     start_time = time.time()
+    
+    # Handle flexible message format (str or Message object)
+    if isinstance(request_body.message, str):
+        message = Message(text=request_body.message, sender="scammer")
+    else:
+        message = request_body.message
+        
     session_id = request_body.sessionId
-    message = request_body.message
     
     # Rate limit check
     if not rate_limiter.check_rate_limit(session_id, client_ip):

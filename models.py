@@ -2,8 +2,8 @@
 Pydantic Models for API Request/Response
 Enhanced with engagement phases, threat levels, and confidence scoring
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 from enum import Enum
 
@@ -36,9 +36,9 @@ class SenderType(str, Enum):
 
 class Message(BaseModel):
     """Single message in the conversation"""
-    sender: str = Field(..., description="Either 'scammer' or 'user'")
+    sender: str = Field(default="scammer", description="Either 'scammer' or 'user'")
     text: str = Field(..., description="Message content")
-    timestamp: Any = Field(..., description="Epoch time in ms or ISO-8601 string")
+    timestamp: Optional[Any] = Field(default=None, description="Epoch time in ms or ISO-8601 string")
 
 
 class Metadata(BaseModel):
@@ -51,10 +51,21 @@ class Metadata(BaseModel):
 
 class IncomingRequest(BaseModel):
     """Incoming API request representing a message in conversation"""
-    sessionId: str = Field(..., description="Unique session identifier")
-    message: Message = Field(..., description="The latest incoming message")
-    conversationHistory: List[Message] = Field(default=[], description="Previous messages")
+    sessionId: str = Field(
+        default_factory=lambda: f"session-{int(datetime.now().timestamp())}", 
+        description="Unique session identifier",
+        alias="session_id"
+    )
+    message: Union[Message, str] = Field(..., description="The latest incoming message (object or string)")
+    conversationHistory: List[Message] = Field(
+        default=[], 
+        description="Previous messages",
+        alias="conversation_history"
+    )
     metadata: Optional[Metadata] = Field(default=None, description="Additional context")
+
+    class Config:
+        populate_by_name = True  # Allows both sessionId and session_id
 
 
 # ============== Response Models ==============
