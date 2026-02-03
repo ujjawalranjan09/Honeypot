@@ -38,7 +38,7 @@ class Message(BaseModel):
     """Single message in the conversation"""
     sender: str = Field(..., description="Either 'scammer' or 'user'")
     text: str = Field(..., description="Message content")
-    timestamp: str = Field(..., description="ISO-8601 timestamp")
+    timestamp: Any = Field(..., description="Epoch time in ms or ISO-8601 string")
 
 
 class Metadata(BaseModel):
