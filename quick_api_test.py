@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import time
 
 API_URL = 'http://127.0.0.1:8000'
-API_KEY = 'test-api-key'
+API_KEY = 'your-secret-api-key-here'
 
 # Test scam detection
 payload = {

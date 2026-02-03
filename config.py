@@ -11,7 +11,15 @@ load_dotenv()
 # ============== API Configuration ==============
 API_KEY = os.getenv("HONEYPOT_API_KEY", "your-secret-api-key-here")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemma-3-27b-it:free")
+
+# Collect additional API keys for rotation
+OPENROUTER_API_KEYS = [OPENROUTER_API_KEY] if OPENROUTER_API_KEY else []
+for i in range(2, 11): # Support up to 10 keys
+    key = os.getenv(f"OPENROUTER_API_KEY_{i}")
+    if key:
+        OPENROUTER_API_KEYS.append(key)
+
 GEMINI_API_KEY = "" # Deprecated
 
 
@@ -33,6 +41,8 @@ SCAM_TYPE_THRESHOLDS: Dict[str, float] = {
     "Malware_Scam": 0.45,           # Security threats
     "Social_Media_Phishing": 0.48,  # Social engineering
     "Link_Phishing": 0.45,          # Suspicious links
+    "Digital_Arrest_Scam": 0.35,    # Extremely dangerous - catch very early
+    "Utility_Bill_Scam": 0.40,      # High urgency threats
     "General_Scam": 0.48,           # Default threshold
 }
 
@@ -100,10 +110,10 @@ VECTORIZER_PATH = "models/tfidf_vectorizer.joblib"
 
 # Model training parameters
 MODEL_PARAMS = {
-    "n_estimators": 200,
+    "n_estimators": 250,
     "max_depth": 7,
     "learning_rate": 0.1,
-    "max_features": 5000,
+    "max_features": 10000,
     "ngram_range": (1, 3),
     "min_df": 2,
     "max_df": 0.95,
@@ -168,6 +178,21 @@ SENTIMENT_PATTERNS = {
         r"(?:for\s+your\s+(?:safety|security|protection))",
         r"(?:government|rbi|sebi)\s+(?:approved|authorized|mandated)",
     ],
+    "isolation_phrases": [
+        r"(?:don't|do\s+not)\s+(?:tell|inform|share\s+with)\s+(?:anyone|family|police|bank)",
+        r"(?:keep\s+this|stay)\s+(?:confidential|on\s+the\s+call|private)",
+        r"(?:secret\s+investigation|don't\s+disconnect)",
+    ],
+    "authority_phrases": [
+        r"(?:cbi|police|customs|officer|inspector|commissioner|sharma|singh|verma)",
+        r"(?:legal\s+notice|arrest\s+warrant|court\s+order|supreme\s+court)",
+        r"(?:high\s+level|confidential\s+case|national\s+security)",
+    ],
+    "greed_phrases": [
+        r"(?:guaranteed|100%|daily|easy|instant)\s+(?:profit|return|income|money|prize)",
+        r"(?:double\s+your|earn\s+from\s+home|part\s+time|salary\s+bonus)",
+        r"(?:withdraw\s+anytime|limited\s+slots|vip\s+access)",
+    ],
 }
 
 # ============== Multi-Stage Pattern Detection ==============
@@ -190,6 +215,42 @@ SCAM_PROGRESSION_PATTERNS = {
         ("attractive_terms", r"(?:low\s+interest|no\s+documents?|instant|easy)"),
         ("urgency", r"(?:limited\s+(?:time\s+)?offer|today\s+only|expires?)"),
         ("fee_request", r"(?:processing\s+fee|advance|deposit|charges)"),
+    ],
+    "crypto_investment": [
+        ("high_returns", r"(?:double\s+your|100%\s+profit|guaranteed\s+return|investment\s+opportunity)"),
+        ("platform_mention", r"(?:crypto|bitcoin|binance|trust\s+wallet|liquidity\s+pool|trading\s+bot)"),
+        ("trust_building", r"(?:analysis|expert|signal|insider\s+info)"),
+        ("deposit_request", r"(?:transfer\s+to|deposit|buy\s+usdt|recharge\s+account)"),
+    ],
+    "review_task_scam": [
+        ("job_offer", r"(?:part-?time\s+job|work\s+from\s+home|earn\s+daily|side\s+income)"),
+        ("simple_tasks", r"(?:like\s+youtube|review\s+hotels|subscribe\s+channels|simple\s+tasks)"),
+        ("payment_proof", r"(?:screenshot|payment\s+received|earned\s+Rs)"),
+        ("prepaid_task", r"(?:prepaid\s+task|advance\s+payment|security\s+deposit|benefit\s+task)"),
+    ],
+    "sextortion": [
+        ("threat", r"(?:video\s+recorded|leaked|shared\s+with\s+friends|social\s+media|contacts)"),
+        ("proof_claim", r"(?:screenshot|screen\s+record|recording)"),
+        ("urgency", r"(?:10\s+minutes|immediately|delete\s+now|pay\s+now)"),
+        ("extortion_request", r"(?:pay\s+me|transfer\s+money|don't\s+want\s+to\s+disturb)"),
+    ],
+    "matrimonial_fraud": [
+        ("interest", r"(?:shaadi|matrimony|interested\s+in\s+profile|nice\s+person)"),
+        ("emotional_bond", r"(?:trust|marriage|future|life\s+partner)"),
+        ("emergency_gift", r"(?:parcel\s+sent|gift\s+stuck|customs\s+clearance|family\s+emergency)"),
+        ("payment_request", r"(?:help\s+me|transfer|loan|customs\s+fee)"),
+    ],
+    "digital_arrest": [
+        ("authority_claim", r"(?:cbi|police|narcotics|customs|ncb|mumbai\s+airport)"),
+        ("crime_allegation", r"(?:illegal\s+parcel|drugs|money\s+laundering|terror\s+funding)"),
+        ("digital_arrest_threat", r"(?:digital\s+arrest|don't\s+disconnect|video\s+call|skype)"),
+        ("clearance_payment", r"(?:safe\s+account|verify\s+funds|transfer\s+for\s+clearance)"),
+    ],
+    "electricity_scam": [
+        ("disconnection_threat", r"(?:electricity|power|light)\s+will\s+be\s+disconnected"),
+        ("reason", r"(?:unpaid\s+bill|previous\s+month|not\s+updated)"),
+        ("contact_urgency", r"(?:contact\s+sdo|call\s+immediately|helpline)"),
+        ("payment_request", r"(?:pay\s+via\s+link|update\s+payment|avoid\s+cut)"),
     ],
 }
 
@@ -223,4 +284,9 @@ PAYMENT_PLATFORMS = [
     "paytm", "phonepe", "googlepay", "gpay", "bhim", "amazonpay",
     "mobikwik", "freecharge", "airtel money", "jio money",
     "phonepay", "google pay", "amazon pay", "bhim upi",
+]
+
+CRYPTO_PLATFORMS = [
+    "binance", "coinbase", "wazirx", "trust wallet", "metamask",
+    "kucoin", "kraken", "bybit", "okx", "coindcx", "zebpay",
 ]

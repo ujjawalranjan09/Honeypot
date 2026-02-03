@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import time
 
 API_URL = "http://127.0.0.1:8000"
-API_KEY = "YOUR_SECRET_API_KEY"
+API_KEY = "your-secret-api-key-here"
 
 def test_health():
     """Test 1: Health endpoint"""

@@ -30,8 +30,8 @@ class IntelligenceExtractor:
         # Regex patterns for extraction
         self.patterns = {
             'phone_numbers': [
-                r'(?:\+91[\s-]?)?[6-9]\d{9}',  # Indian mobile
-                r'\b\d{10}\b',  # 10-digit number
+                r'(?:\+91[\s-]?)?[6-9]\d{9}',  # Standard Indian mobile
+                r'\b[6-9]\d{9}\b',             # 10-digit Indian mobile format
                 r'(?:\+\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}',  # International
             ],
             'upi_ids': [
@@ -62,6 +62,21 @@ class IntelligenceExtractor:
             'reference_numbers': [
                 r'(?:ref(?:erence)?|case|ticket|complaint)[\s#:.-]*([A-Z0-9]{6,20})',
                 r'[A-Z]{2,4}[\d]{8,15}',  # Standard reference format
+            ],
+            'crypto_wallets': [
+                r'\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b',  # BTC Legacy
+                r'\bbc1[a-np-z0-9]{39,59}\b',           # BTC Bech32
+                r'\b0x[a-fA-F0-9]{40}\b',               # ETH / ERC20
+                r'\bT[A-Za-z1-9]{33}\b',                # TRC20 (USDT)
+            ],
+            'person_names': [
+                r'(?i)(?:Name|Holder|Beneficiary|Agent|Officer)[\s#:.-]*([a-zA-Z\s]{4,30})',
+            ],
+            'vehicle_numbers': [
+                r'\b[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}\b',  # Standard Indian Vehicle Number (e.g., MH12AB1234)
+            ],
+            'employee_ids': [
+                r'(?i)(?:Employee|Agent|ID|Badge)[\s#:.-]*([A-Z0-9]{4,15})',
             ],
         }
         
@@ -179,6 +194,11 @@ class IntelligenceExtractor:
             if 11 <= len(digits) <= 16:
                 base_confidence += 0.15
         
+        elif item_type == 'crypto':
+            base_confidence += 0.20 # High confidence for specialized format
+            if item.startswith('bc1'):
+                base_confidence += 0.10 # Bech32 is very specific
+        
         return min(base_confidence, 1.0)
     
     def _extract_person_names(self, text: str) -> List[Tuple[str, float]]:
@@ -266,6 +286,9 @@ class IntelligenceExtractor:
             'social_handles': set(),
             'geographic_indicators': set(),
             'reference_numbers': set(),
+            'crypto_wallets': set(),
+            'vehicle_numbers': set(),
+            'employee_ids': set(),
             'confidence_scores': {},
         }
         
@@ -294,6 +317,10 @@ class IntelligenceExtractor:
         for link in extracted['phishing_links']:
             conf = self._calculate_confidence(link, 'link', text, False)
             extracted['confidence_scores'][f'link:{link}'] = conf
+        
+        for wallet in extracted['crypto_wallets']:
+            conf = self._calculate_confidence(wallet, 'crypto', text, False)
+            extracted['confidence_scores'][f'wallet:{wallet}'] = conf
         
         # Extract suspicious keywords
         text_lower = text.lower()
@@ -332,17 +359,46 @@ class IntelligenceExtractor:
                 filtered_links.add(link)
         extracted['phishing_links'] = filtered_links
         
-        # Filter bank accounts (remove phone numbers mistakenly captured)
-        real_bank_accounts = set()
+        # 🚨 CROSS-VERIFICATION: Resolve overlaps between Phone and Bank Account
+        final_phones = set()
+        final_accounts = set()
+
+        # Step 1: Identify "strong" account matches (context + long length)
         for acc in extracted['bank_accounts']:
             digits = re.sub(r'\D', '', acc)
-            # Must be valid length and not a phone number
             if 9 <= len(digits) <= 18:
-                if not re.match(r'^[6-9]\d{9}$', digits):
-                    real_bank_accounts.add(acc)
+                # If it has "A/C" prefix, it's almost certainly an account
+                if re.search(r'a/c|account|bank', acc.lower()) or account_context:
+                    final_accounts.add(acc)
                     conf = self._calculate_confidence(acc, 'account', text, account_context)
                     extracted['confidence_scores'][f'account:{acc}'] = conf
-        extracted['bank_accounts'] = real_bank_accounts
+                else:
+                    # Generic digits - check if it looks like a phone
+                    if not re.match(r'^[6-9]\d{9}$', digits):
+                        final_accounts.add(acc)
+                        conf = self._calculate_confidence(acc, 'account', text, account_context)
+                        extracted['confidence_scores'][f'account:{acc}'] = conf
+
+        # Step 2: Filter phones (must not be in the finalized accounts)
+        for phone in extracted['phone_numbers']:
+            digits = re.sub(r'\D', '', phone).replace('91', '', 1) if '91' in phone else re.sub(r'\D', '', phone)
+            
+            # If this exact digit sequence is already confirmed as an account, skip phone extraction
+            is_captured_as_acc = any(digits in re.sub(r'\D', '', a) for a in final_accounts)
+            
+            if not is_captured_as_acc:
+                # Basic validation for Indian phone (must start with 6-9 if 10 digits)
+                if len(digits) == 10 and re.match(r'^[6-9]', digits):
+                    final_phones.add(phone)
+                    conf = self._calculate_confidence(phone, 'phone', text, phone_context)
+                    extracted['confidence_scores'][f'phone:{phone}'] = conf
+                elif len(digits) > 10: # International or prefix
+                    final_phones.add(phone)
+                    conf = self._calculate_confidence(phone, 'phone', text, phone_context)
+                    extracted['confidence_scores'][f'phone:{phone}'] = conf
+
+        extracted['phone_numbers'] = final_phones
+        extracted['bank_accounts'] = final_accounts
         
         return extracted
     
@@ -380,6 +436,7 @@ class IntelligenceExtractor:
         upi_conf = {k.split(':')[1]: v for k, v in all_confidence.items() if k.startswith('upi:')}
         account_conf = {k.split(':')[1]: v for k, v in all_confidence.items() if k.startswith('account:')}
         link_conf = {k.split(':')[1]: v for k, v in all_confidence.items() if k.startswith('link:')}
+        wallet_conf = {k.split(':')[1]: v for k, v in all_confidence.items() if k.startswith('wallet:')}
         
         # Calculate overall quality score
         total_items = sum(len(v) for v in all_extracted.values())
@@ -391,6 +448,7 @@ class IntelligenceExtractor:
             upiIds=upi_conf,
             bankAccounts=account_conf,
             phishingLinks=link_conf,
+            cryptoWallets=wallet_conf,
             overallScore=round(overall_score, 2)
         )
         
@@ -407,6 +465,9 @@ class IntelligenceExtractor:
             socialMediaHandles=list(all_extracted['social_handles']),
             geographicIndicators=list(all_extracted['geographic_indicators']),
             referenceNumbers=list(all_extracted['reference_numbers']),
+            vehicleNumbers=list(all_extracted.get('vehicle_numbers', set())),
+            employeeIds=list(all_extracted.get('employee_ids', set())),
+            cryptoWallets=list(all_extracted['crypto_wallets']),
             confidenceScores=confidence
         )
         
@@ -441,6 +502,9 @@ class IntelligenceExtractor:
             socialMediaHandles=list(set(existing.socialMediaHandles + new.socialMediaHandles)),
             geographicIndicators=list(set(existing.geographicIndicators + new.geographicIndicators)),
             referenceNumbers=list(set(existing.referenceNumbers + new.referenceNumbers)),
+            cryptoWallets=list(set(existing.cryptoWallets + new.cryptoWallets)),
+            vehicleNumbers=list(set(existing.vehicleNumbers + new.vehicleNumbers)),
+            employeeIds=list(set(existing.employeeIds + new.employeeIds)),
         )
         
         # Merge confidence scores (keep highest)
@@ -464,12 +528,18 @@ class IntelligenceExtractor:
             for k, v in new.confidenceScores.phishingLinks.items():
                 if k not in merged_link_conf or v > merged_link_conf[k]:
                     merged_link_conf[k] = v
+
+            merged_wallet_conf = {**getattr(existing.confidenceScores, 'cryptoWallets', {})}
+            for k, v in getattr(new.confidenceScores, 'cryptoWallets', {}).items():
+                if k not in merged_wallet_conf or v > merged_wallet_conf[k]:
+                    merged_wallet_conf[k] = v
             
             merged.confidenceScores = IntelligenceConfidence(
                 phoneNumbers=merged_phone_conf,
                 upiIds=merged_upi_conf,
                 bankAccounts=merged_account_conf,
                 phishingLinks=merged_link_conf,
+                cryptoWallets=merged_wallet_conf,
                 overallScore=max(
                     existing.confidenceScores.overallScore,
                     new.confidenceScores.overallScore
@@ -503,6 +573,10 @@ class IntelligenceExtractor:
             score += 0.05
         if intel.referenceNumbers:
             score += 0.05
+        if intel.vehicleNumbers:
+            score += 0.10
+        if intel.employeeIds:
+            score += 0.10
         
         return min(score, 1.0)
 

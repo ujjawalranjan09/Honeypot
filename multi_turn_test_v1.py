@@ -12,7 +12,7 @@ import os
 
 # --- CONFIGURATION ---
 API_URL = os.getenv("HONEYPOT_API_URL", "http://localhost:8000")
-API_KEY = os.getenv("HONEYPOT_API_KEY", "YOUR_SECRET_API_KEY")
+API_KEY = os.getenv("HONEYPOT_API_KEY", "your-secret-api-key-here")
 DELAY_SECONDS = 0.5 
 
 # Iteration 1: Enhanced and More Varied Scam Scenarios

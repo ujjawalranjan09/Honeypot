@@ -73,6 +73,7 @@ class IntelligenceConfidence(BaseModel):
     upiIds: Dict[str, float] = Field(default_factory=dict, description="UPI ID -> confidence")
     bankAccounts: Dict[str, float] = Field(default_factory=dict, description="Account -> confidence")
     phishingLinks: Dict[str, float] = Field(default_factory=dict, description="Link -> confidence")
+    cryptoWallets: Dict[str, float] = Field(default_factory=dict, description="Wallet -> confidence")
     overallScore: float = Field(default=0.0, description="Overall intelligence quality score")
 
 
@@ -82,6 +83,7 @@ class ExtractedIntelligence(BaseModel):
     upiIds: List[str] = Field(default=[])
     phishingLinks: List[str] = Field(default=[])
     phoneNumbers: List[str] = Field(default=[])
+    cryptoWallets: List[str] = Field(default=[], description="Extracted crypto wallet addresses")
     suspiciousKeywords: List[str] = Field(default=[])
     # New fields
     emailAddresses: List[str] = Field(default=[], description="Extracted email addresses")
@@ -91,6 +93,8 @@ class ExtractedIntelligence(BaseModel):
     socialMediaHandles: List[str] = Field(default=[], description="Social media handles")
     geographicIndicators: List[str] = Field(default=[], description="Cities, area codes")
     referenceNumbers: List[str] = Field(default=[], description="Case/reference numbers")
+    vehicleNumbers: List[str] = Field(default=[], description="Extracted vehicle numbers")
+    employeeIds: List[str] = Field(default=[], description="Extracted employee/agent IDs")
     confidenceScores: Optional[IntelligenceConfidence] = Field(default=None)
 
 

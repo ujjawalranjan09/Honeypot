@@ -1,7 +1,7 @@
 // configuration
-const API_BASE_URL = 'http://127.0.0.1:8000';
-const POLLING_INTERVAL = 3000;
-const API_KEY = 'YOUR_SECRET_API_KEY';
+const API_BASE_URL = ''; // Relative path for production deployment
+const POLLING_INTERVAL = 2000;
+const API_KEY = 'your-secret-api-key-here'; // Matches .env default
 
 // State
 let activeSessions = [];
@@ -19,6 +19,10 @@ const sandboxSend = document.getElementById('sandbox-send');
 const intelContainer = document.getElementById('intel-container');
 const frustrationBar = document.getElementById('frustration-bar');
 const modelQueueList = document.getElementById('model-queue-list');
+const statThreats = document.getElementById('stat-threats');
+const statHealth = document.getElementById('stat-health');
+const statIntel = document.getElementById('stat-intel');
+const sessionCount = document.getElementById('session-count');
 
 // Icons Initialization
 lucide.createIcons();
@@ -32,25 +36,40 @@ async function fetchStats() {
         });
         const data = await response.json();
         
-        document.getElementById('stat-threats').textContent = data.active_sessions || 0;
-        document.getElementById('session-count').textContent = data.active_sessions || 0;
-        document.getElementById('stat-health').innerHTML = `
-            <i data-lucide="${data.gemini_configured ? 'check-circle' : 'alert-circle'}" class="w-5 h-5 ${data.gemini_configured ? 'text-green-400' : 'text-red-400'}"></i>
-            ${data.gemini_configured ? 'Online' : 'Offline'}
-        `;
+        statThreats.textContent = data.active_sessions || 0;
+        sessionCount.textContent = data.active_sessions || 0;
+        
         lucide.createIcons();
     } catch (error) {
         console.error('Stats fetch failed', error);
+        statHealth.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i> Disconnected`;
+        lucide.createIcons();
+    }
+}
+
+async function fetchModelStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/model_status`, {
+            headers: { 'X-API-Key': API_KEY }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            renderModelStatus(data);
+        }
+    } catch (error) {
+        console.error('Model status fetch failed', error);
     }
 }
 
 async function fetchSessions() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api_logger/sessions`, {
-            headers: { 'X-API-Key': API_KEY }
-        });
-        // Note: Using a mock fallback if internal logger endpoint isn't exposed
-        // For hackathon, we'll poll health and use session IDs we've seen
+        // Ideally we would have an endpoint listing all active session IDs
+        // For now, we rely on health check active_sessions count
+        // and manually tracked sessions in the UI if possible.
+        // If we had /api/sessions endpoint:
+        // const response = await fetch(`${API_BASE_URL}/api/sessions`, { headers: { 'X-API-Key': API_KEY } });
+        // const sessions = await response.json();
+        // updateSessionDropdown(sessions);
     } catch (err) {}
 }
 
@@ -62,7 +81,11 @@ async function fetchSessionDetail(sessionId) {
         });
         if (response.ok) {
             const data = await response.json();
-            updateUI(data);
+            if (data) {
+                updateUI(data);
+                // If it's a real session (not sandbox), append messages we might have missed
+                // Note: Real implementation would need full history sync
+            }
         }
     } catch (error) {
         console.error('Session detail fetch failed', error);
@@ -84,11 +107,10 @@ async function sendMessage(text) {
             text: text,
             timestamp: new Date().toISOString()
         },
-        conversationHistory: [], // Server handles history tracking
         metadata: {
-            channel: "Web-Sandbox",
-            language: "Hinglish",
-            locale: "IN"
+            channel: "Dashboard-Sandbox",
+            language: "EN",
+            country: "IN"
         }
     };
 
@@ -119,15 +141,77 @@ async function sendMessage(text) {
 
 // --- UI Functions ---
 
+function renderModelStatus(data) {
+    // data = { primary_model, current_front, queue_size, key_pool_size }
+    
+    // 1. Overall Status
+    const isHealthy = data.queue_size > 0 && data.key_pool_size > 0;
+    statHealth.innerHTML = `
+        <i data-lucide="${isHealthy ? 'cpu' : 'alert-circle'}" class="w-5 h-5 ${isHealthy ? 'text-green-400' : 'text-red-400'}"></i>
+        <span>${isHealthy ? 'Neuro-Net Online' : 'System Degraded'}</span>
+    `;
+
+    // 2. Queue List
+    modelQueueList.innerHTML = '';
+    
+    // Key Pool Item
+    const keyItem = document.createElement('div');
+    keyItem.className = 'glass p-2 flex items-center justify-between border-l-4 border-l-green-500';
+    keyItem.innerHTML = `
+        <span class="text-xs orbitron text-slate-400 uppercase">Key Pool</span>
+        <span class="text-xs font-bold font-mono text-green-400">${data.key_pool_size || '?'} Active Keys</span>
+    `;
+    modelQueueList.appendChild(keyItem);
+
+    // Current Model
+    if (data.current_front) {
+        const primaryItem = document.createElement('div');
+        primaryItem.className = 'glass p-2 flex items-center justify-between border-l-4 border-l-violet-500';
+        primaryItem.innerHTML = `
+            <div>
+                <p class="text-[10px] orbitron text-violet-400 uppercase">Current Model</p>
+                <p class="text-xs font-mono text-slate-300 truncate w-32">${data.current_front.split('/').pop()}</p>
+            </div>
+            <div class="text-[10px] bg-violet-500/20 px-2 py-1 rounded text-violet-300">ACTIVE</div>
+        `;
+        modelQueueList.appendChild(primaryItem);
+    }
+    
+    // Queue Stats
+    const queueItem = document.createElement('div');
+    queueItem.className = 'glass p-2 flex items-center justify-between border-l-4 border-l-blue-500';
+    queueItem.innerHTML = `
+        <span class="text-xs orbitron text-slate-400 uppercase">Fallback Queue</span>
+        <span class="text-xs font-bold font-mono text-blue-400">${data.queue_size || 0} Models</span>
+    `;
+    modelQueueList.appendChild(queueItem);
+    
+    lucide.createIcons();
+}
+
 function addChatMessage(role, text) {
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${role === 'scammer' ? 'chat-scammer' : 'chat-agent'}`;
-    bubble.textContent = text;
+    
+    // Format timestamp
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    bubble.innerHTML = `
+        <div class="mb-1 text-[10px] opacity-50 uppercase tracking-wider font-bold mb-1">${role === 'scammer' ? 'Scammer Target' : 'Honeypot AI'} <span class="font-normal float-right">${time}</span></div>
+        <div class="text-sm leading-relaxed whitespace-pre-wrap">${text}</div>
+    `;
+    
     chatContainer.appendChild(bubble);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+    });
 }
 
 function updateUI(data) {
+    // Data check
+    if (!data) return;
+
     // Update Intel
     const intel = data.extractedIntelligence;
     if (intel) {
@@ -145,16 +229,20 @@ function updateUI(data) {
                 hasData = true;
                 item.list.forEach(val => {
                     const el = document.createElement('div');
-                    el.className = 'glass p-3 flex items-center justify-between group hover:border-blue-500 transition-all';
+                    el.className = 'glass p-3 flex items-center justify-between group hover:border-violet-500 transition-all mb-2';
                     el.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="${item.icon}" class="w-4 h-4 ${item.color}"></i>
-                            <div>
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="p-2 bg-slate-800 rounded-full">
+                                <i data-lucide="${item.icon}" class="w-4 h-4 ${item.color}"></i>
+                            </div>
+                            <div class="overflow-hidden">
                                 <p class="text-[10px] text-slate-500 uppercase orbitron">${item.label}</p>
-                                <p class="text-xs font-mono">${val}</p>
+                                <p class="text-xs font-mono truncate text-slate-300" title="${val}">${val}</p>
                             </div>
                         </div>
-                        <i data-lucide="copy" class="w-3 h-3 text-slate-600 opacity-0 group-hover:opacity-100 cursor-pointer"></i>
+                        <button class="opacity-0 group-hover:opacity-100 transition-opacity" onclick="navigator.clipboard.writeText('${val}')">
+                            <i data-lucide="copy" class="w-3 h-3 text-slate-500 hover:text-white"></i>
+                        </button>
                     `;
                     intelContainer.appendChild(el);
                 });
@@ -162,37 +250,66 @@ function updateUI(data) {
         });
 
         if (!hasData) {
-            intelContainer.innerHTML = '<p class="text-slate-500 text-center py-8 text-xs orbitron opacity-50">Intelligence stream empty</p>';
+            intelContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 text-slate-600 space-y-2">
+                    <i data-lucide="database" class="w-8 h-8 opacity-20"></i>
+                    <p class="text-[10px] uppercase orbitron tracking-widest">Vault Empty</p>
+                </div>
+            `;
         }
         lucide.createIcons();
+        
+        // Update Count
+        const intelCount = (intel.upiIds?.length || 0) + (intel.bankAccounts?.length || 0) + (intel.phishingLinks?.length || 0) + (intel.phoneNumbers?.length || 0);
+        statIntel.innerHTML = `<span class="animate-pulse text-blue-400">${intelCount}</span>`;
     }
 
     // Update Frustration
-    if (data.analytics && data.analytics.scammerEngagementLevel) {
-        const frustration = data.analytics.scammerEngagementLevel * 100;
+    if (data.analytics && typeof data.analytics.scammerEngagementLevel !== 'undefined') {
+        const frustration = Math.min(Math.max(data.analytics.scammerEngagementLevel * 100, 5), 100);
         frustrationBar.style.width = `${frustration}%`;
+        
+        // Color shift based on frustration
+        if(frustration > 80) frustrationBar.className = "h-full bg-gradient-to-r from-red-500 to-red-600 shadow-[0_0_10px_rgba(239,68,68,0.5)]";
+        else if(frustration > 50) frustrationBar.className = "h-full bg-gradient-to-r from-orange-400 to-orange-500";
+        else frustrationBar.className = "h-full bg-gradient-to-r from-blue-400 to-green-400";
     }
-
-    // Update Overall Intel Count
-    const intelCount = (intel.upiIds?.length || 0) + (intel.bankAccounts?.length || 0) + (intel.phishingLinks?.length || 0) + (intel.phoneNumbers?.length || 0);
-    document.getElementById('stat-intel').textContent = intelCount;
 }
 
 // --- Event Listeners ---
 
 sandboxToggle.addEventListener('click', () => {
     isSandboxMode = !isSandboxMode;
+    sandboxToggle.classList.toggle('border-violet-500');
     sandboxToggle.classList.toggle('bg-violet-600');
-    sandboxToggle.classList.toggle('bg-green-600');
-    sandboxToggle.textContent = isSandboxMode ? 'Exit Sandbox' : 'Sandbox Mode';
+    
+    sandboxToggle.classList.toggle('border-green-500');
+    sandboxToggle.classList.toggle('bg-green-600/30');
+    sandboxToggle.classList.toggle('text-green-400');
+    
+    sandboxToggle.textContent = isSandboxMode ? 'Terminate Sandbox' : 'Sandbox Mode';
     sandboxInputArea.classList.toggle('hidden');
     
     if (isSandboxMode) {
-        chatContainer.innerHTML = '<div class="text-center py-4 orbitron text-[10px] text-violet-400 uppercase tracking-widest border-b border-violet-900/30 mb-4 italic">Sandbox Protocol Initiated: Authorized Scammer Simulation</div>';
-        currentSessionId = `sandbox-${Date.now()}`;
-    } else {
         chatContainer.innerHTML = '';
+        const initMsg = document.createElement('div');
+        initMsg.className = 'text-center py-4 border-b border-white/10 mb-4';
+        initMsg.innerHTML = '<span class="text-[10px] orbitron text-green-400 uppercase tracking-[0.2em] animate-pulse">Encryption Key: Verified // Sandbox Active</span>';
+        chatContainer.appendChild(initMsg);
+        
+        currentSessionId = `sandbox-${Date.now()}`;
+        updateUI({ extractedIntelligence: {}, analytics: { scammerEngagementLevel: 0.1 } });
+        
+        addChatMessage('agent', "Simulated connection established. Waiting for scammer input...");
+    } else {
+        chatContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-slate-500 opacity-50 space-y-4">
+                <i data-lucide="activity" class="w-12 h-12"></i>
+                <p class="orbitron text-xs">System Idle // Monitoring...</p>
+            </div>
+        `;
         currentSessionId = null;
+        lucide.createIcons();
     }
 });
 
@@ -205,8 +322,10 @@ sandboxInput.addEventListener('keypress', (e) => {
 
 function startPolling() {
     fetchStats();
+    fetchModelStatus();
     pollingIntervalId = setInterval(() => {
         fetchStats();
+        fetchModelStatus();
         if (currentSessionId && !isSandboxMode) {
             fetchSessionDetail(currentSessionId);
         }

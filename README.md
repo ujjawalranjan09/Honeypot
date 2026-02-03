@@ -1,16 +1,19 @@
 # Agentic Honey-Pot API for Scam Detection & Intelligence Extraction
 
-An AI-powered honeypot system that detects scam intent and autonomously engages scammers to extract useful intelligence without revealing detection.
+**Version 5.2 "Bharat Shield Ultimate"** - An AI-powered honeypot system that detects scam intent using **32 specialized Kill Switches** and autonomously engages scammers to extract useful intelligence without revealing detection.
 
 ## 🚀 Features
 
-- **Scam Detection**: Hybrid ML + rule-based detection for English, Hindi, and Hinglish
-- **Multi-turn Conversations**: Maintains context across conversation sessions
-- **AI Agent Personas**: 6 distinct personas with Hinglish/localized support
-- **Intelligence Extraction**: Extracts phone numbers, UPI IDs, bank accounts, phishing links
-- **Multi-Model Fallback**: Robust queue-based system using 15+ models (Llama 3.3, Gemini, Qwen, etc.)
-- **GUVI Callback**: Automatically reports results to GUVI evaluation endpoint
-- **REST API**: Production-ready FastAPI with authentication
+- **Hybrid Scam Detection**: ML + Rule-based + 32 Kill Switches for English, Hindi, and Hinglish
+- **Indian Environment Hardening**: Hi Mom, Aadhaar, SBI YONO, EPF, FASTag, and 27 more scam types
+- **32 Scam Categories**: Comprehensive coverage of the Indian cybercrime landscape
+- **Universal Semantic Filter**: LLM intent analysis handles novel "grooming" scams missed by keyword filters
+- **Global Scammer Profiling**: Persistent cross-session tracking of repeat offenders (UPI, Phone, Crypto)
+- **Enhanced Intelligence Extraction**: Vehicle Numbers, Employee IDs, Bank Details, and Crypto Wallets
+- **Multi-Model Fallback**: Ultra-robust queue using 30+ Free-tier models and 10+ rotating API keys
+- **116+ Contextual Fallbacks**: Specialized Hinglish responses for each scam category
+- **Visual Intelligence Reports**: Premium cyberpunk-themed HTML dashboard
+- **2024-2025 Threat Intelligence**: Updated with latest Indian cybercrime research and web-crawled trends
 
 ## 📦 Installation
 
@@ -161,22 +164,26 @@ honeypot-project/
     └── tfidf_vectorizer.joblib
 ```
 
-## 🔧 Architecture
+## 🔧 Architecture (V4.0)
 
-1. **Scam Detector**: Hybrid approach using:
+1. **Scam Detector** (19 Kill Switches):
    - TF-IDF + Gradient Boosting ML model
-   - Rule-based pattern matching for urgency, threats, financial keywords
+   - 19 specialized Kill Switches for high-confidence detection
+   - Categories: Pig Butchering, Honeytrap, Voice Cloning, CEO Fraud, etc.
 
-2. **AI Agent**: Uses Google Gemini with fallback templates
-   - Three personas for different scam scenarios
-   - Context-aware response generation
+2. **AI Agent** (68+ Fallback Responses):
+   - 12 specialized personas for different scam scenarios
+   - Hinglish psychological counter-interrogation tactics
+   - Multi-model fallback with 30+ free-tier models
 
-3. **Intelligence Extractor**: Regex-based extraction for:
+3. **Intelligence Extractor** (Enhanced):
    - Phone numbers (Indian format)
    - UPI IDs (all banks)
    - Bank account numbers
+   - Vehicle Numbers (Indian plates)
+   - Employee/Agent IDs
+   - Crypto Wallets
    - Phishing links
-   - Suspicious keywords
 
 4. **Session Manager**: Tracks conversation state and triggers GUVI callback
 

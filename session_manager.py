@@ -62,12 +62,13 @@ class SessionManager:
         self,
         session_id: str,
         scam_type: Optional[str] = None,
-        forced_persona: Optional[str] = None
+        forced_persona: Optional[str] = None,
+        first_message: Optional[str] = None
     ) -> SessionState:
         """Get existing session or create new one"""
         async with self._lock:
             if session_id not in self.sessions:
-                persona = forced_persona or agent.select_persona(scam_type or "General_Scam")
+                persona = forced_persona or agent.select_persona(scam_type or "General_Scam", first_message=first_message)
                 self.sessions[session_id] = SessionState(
                     session_id=session_id,
                     scam_type=scam_type,
@@ -160,6 +161,10 @@ class SessionManager:
         intel = session.extracted_intelligence
         if len(intel.personNames) > 2 and len(intel.phoneNumbers) > 2:
             risk += 0.1
+
+        # Scammer frustration increases risk
+        if session.analytics.scammer_sentiment == "frustrated":
+            risk += 0.2
         
         session.analytics.detectionRisk = min(risk, 1.0)
         return session.analytics.detectionRisk
@@ -213,7 +218,12 @@ class SessionManager:
         forced_persona: Optional[str] = None
     ) -> SessionState:
         """Update session with new message and detection results"""
-        session = await self.get_or_create_session(session_id, scam_type, forced_persona=forced_persona)
+        session = await self.get_or_create_session(
+            session_id, 
+            scam_type, 
+            forced_persona=forced_persona,
+            first_message=message.text
+        )
         
         async with self._lock:
             # Update basic info
@@ -228,7 +238,9 @@ class SessionManager:
             # Update scam type if not set
             if not session.scam_type and scam_type:
                 session.scam_type = scam_type
-                session.persona = agent.select_persona(scam_type)
+                # Potentially re-evaluate persona if it was 'General_Scam' but we now know the type
+                if session.persona == "naive_victim" and session.messages_exchanged <= 1:
+                    session.persona = agent.select_persona(scam_type, first_message=message.text)
             
             # Update analytics
             self._update_analytics(session, message)
@@ -238,6 +250,19 @@ class SessionManager:
             
             # Extract and accumulate intelligence
             new_intel = extractor.extract_from_text(message.text)
+            
+            # --- 🛡️ REFINEMENT: Update Global Scammer Profiler ---
+            try:
+                from scammer_profiler import profiler
+                for upi in new_intel.get('upi_ids', []):
+                    profiler.update_profile("upi", str(upi), session_id, session.scam_type or "Unknown")
+                for phone in new_intel.get('phone_numbers', []):
+                    profiler.update_profile("phone", str(phone), session_id, session.scam_type or "Unknown")
+                for wallet in new_intel.get('crypto_wallets', []):
+                    profiler.update_profile("wallet", str(wallet), session_id, session.scam_type or "Unknown")
+            except Exception as e:
+                logger.error(f"Global profiler update failed: {e}")
+
             session.extracted_intelligence = extractor.merge_intelligence(
                 session.extracted_intelligence,
                 ExtractedIntelligence(
@@ -245,6 +270,7 @@ class SessionManager:
                     upiIds=list(new_intel.get('upi_ids', set())),
                     phishingLinks=list(new_intel.get('phishing_links', set())),
                     phoneNumbers=list(new_intel.get('phone_numbers', set())),
+                    cryptoWallets=list(new_intel.get('crypto_wallets', set())),
                     suspiciousKeywords=list(new_intel.get('suspicious_keywords', set())),
                     emailAddresses=list(new_intel.get('email_addresses', set())),
                     personNames=list(new_intel.get('person_names', set())),
@@ -253,6 +279,8 @@ class SessionManager:
                     socialMediaHandles=list(new_intel.get('social_handles', set())),
                     geographicIndicators=list(new_intel.get('geographic_indicators', set())),
                     referenceNumbers=list(new_intel.get('reference_numbers', set())),
+                    vehicleNumbers=list(new_intel.get('vehicle_numbers', set())),
+                    employeeIds=list(new_intel.get('employee_ids', set())),
                 )
             )
             

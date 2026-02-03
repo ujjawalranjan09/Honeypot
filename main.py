@@ -13,6 +13,8 @@ from fastapi import FastAPI, HTTPException, Header, Depends, BackgroundTasks, Re
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
+import os
 
 from config import (
     API_KEY,
@@ -251,7 +253,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # ============== Dependencies ==============
 
-async def verify_api_key(x_api_key: str = Header(..., description="API Key for authentication")):
+async def verify_api_key(x_api_key: str = Header(..., description="API Key for authentication", alias="x-api-key")):
     """Verify API key from header"""
     if x_api_key != API_KEY:
         raise InvalidAPIKeyError("Invalid or missing API key")
@@ -286,6 +288,12 @@ async def health_check():
         "active_sessions": len(session_manager.sessions),
         "version": "2.0.0"
     }
+
+@app.get("/api/model_status", tags=["System"])
+async def model_status(x_api_key: str = Header(None)):
+    """Get detailed AI model status and queue"""
+    await verify_api_key(x_api_key)
+    return agent.get_model_health_status()
 
 
 @app.post("/api/message", response_model=APIResponse, tags=["Core"])
@@ -325,10 +333,24 @@ async def process_message(
         # Get conversation context
         context = [msg.text for msg in request_body.conversationHistory]
         
-        # Detect scam with enhanced analysis
+        # Detect scam with enhanced analysis (Rule-based first)
         is_scam, confidence, scam_type, keywords, classification, threat_level = detector.detect(
             message.text, context=context
         )
+        
+        # 🧠 HYBRID UPGRADE: If Rule-based missed it, check Semantic Intent with LLM
+        # Only check if message is substantial (>20 chars) and not already flagged
+        if not is_scam and len(message.text) > 20 and agent.configured:
+            llm_is_scam, llm_conf, llm_reason = await agent.analyze_scam_intent(message.text)
+            
+            if llm_is_scam and llm_conf > 0.4:
+                logger.warning(f"Semantic Override: LLM detected scam where Rules failed. Reason: {llm_reason}")
+                is_scam = True
+                confidence = max(confidence, llm_conf)
+                scam_type = "Sophisticated_Scam" # Generic type for LLM catch
+                keywords.append("AI_SEMANTIC_DETECTION")
+                classification.scamType = scam_type
+                classification.confidence = llm_conf
         
         # Log detection result
         api_logger.log_scam_detection(
@@ -371,19 +393,14 @@ async def process_message(
         
         # Generate agent response for EVERY message (not just scam detected)
         # This ensures we always engage and never return None
-        if not session.engagement_complete:
+        # Generate agent response ONLY if scam is detected or simulation is active
+        # This acts as a "Silent Observer" for benign messages
+        if (is_scam or session.scam_detected) and not session.engagement_complete:
             try:
                 agent_response, agent_notes, delay_ms = await agent.generate_response(session, message.text)
                 
-                # Only apply delay for scam conversations (not proactive ones)
-                if session.scam_detected:
-                    await asyncio.sleep(delay_ms / 1000.0)  # Convert milliseconds to seconds
-                    log_with_context(
-                        logger, logging.INFO,
-                        f"Applied delay of {delay_ms/1000:.1f}s to simulate human typing",
-                        session_id=session_id,
-                        delay_seconds=delay_ms/1000
-                    )
+                # Apply delay to simulate human typing
+                await asyncio.sleep(delay_ms / 1000.0)
                 
                 await session_manager.add_agent_response(session_id, agent_response, agent_notes)
                 response.reply = agent_response
@@ -392,9 +409,11 @@ async def process_message(
                 
             except Exception as e:
                 logger.error(f"Agent response generation failed: {e}", exc_info=True)
-                # Use emergency fallback from the agent
                 response.reply = "Haan ji bhaiya, ek minute ruko... main abhi busy hun. Aap kaun?"
                 response.agentNotes = f"Agent error, used inline fallback: {str(e)}"
+        else:
+            response.reply = None
+            response.agentNotes = "Msg ignored (Not a scam)"
         
         # Generate summary if past minimum messages
         if session.messages_exchanged >= MIN_ENGAGEMENT_MESSAGES:
@@ -561,32 +580,33 @@ async def get_stats(api_key: str = Depends(verify_api_key)):
 
 @app.get("/api/scammer-profiles", tags=["Analytics"])
 async def get_scammer_profiles(
-    limit: int = 10,
+    limit: int = 15,
     api_key: str = Depends(verify_api_key)
 ):
     """
-    Get known scammer profiles from cross-session analysis
-    
-    Returns information about identified scammer phone numbers and UPI IDs
-    that have been seen across multiple sessions.
+    Get known scammer profiles from persistent cross-session analysis
     """
-    profiles = []
-    for identifier, data in sorted(
-        session_manager.scammer_profiles.items(),
-        key=lambda x: len(x[1].get("sessions", [])),
-        reverse=True
-    )[:limit]:
-        profiles.append({
-            "identifier": identifier[:4] + "****" + identifier[-4:] if len(identifier) > 8 else identifier,
-            "sessionsCount": len(data.get("sessions", [])),
-            "scamTypes": list(data.get("scam_types", [])),
-            "firstSeen": data.get("first_seen").isoformat() if data.get("first_seen") else None,
-            "lastSeen": data.get("last_seen").isoformat() if data.get("last_seen") else None,
-        })
+    from scammer_profiler import profiler
+    all_profiles = []
+    
+    # Flatten categories from persistent DB
+    for cat in ["upi", "phone", "wallet"]:
+        for identifier, data in profiler.profiles.get(cat, {}).items():
+            all_profiles.append({
+                "identifier": identifier[:4] + "****" + identifier[-4:] if len(identifier) > 10 else identifier,
+                "category": cat,
+                "sessionsCount": data.get("hit_count", 0),
+                "scamTypes": list(data.get("scam_types", [])),
+                "firstSeen": data.get("first_seen"),
+                "lastSeen": data.get("last_seen")
+            })
+            
+    # Sort by hit count
+    top_profiles = sorted(all_profiles, key=lambda x: x["sessionsCount"], reverse=True)[:limit]
     
     return {
-        "totalProfiles": len(session_manager.scammer_profiles),
-        "profiles": profiles
+        "totalProfiles": len(all_profiles),
+        "profiles": top_profiles
     }
 
 
@@ -612,6 +632,13 @@ async def get_available_personas(api_key: str = Depends(verify_api_key)):
         })
     
     return {"personas": personas}
+
+
+# ============== Frontend ==============
+
+# Mount frontend if directory exists
+if os.path.isdir("frontend"):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 
 # ============== Custom OpenAPI Schema ==============

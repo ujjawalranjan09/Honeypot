@@ -1,0 +1,32 @@
+{
+  "upi": {
+    "blackmail@okaxis": {
+      "first_seen": "2026-02-03T01:51:17.194834",
+      "last_seen": "2026-02-03T01:53:20.513501",
+      "sessions": [
+        "marathon-1770063677-Sex",
+        "marathon-1770063800-Sex"
+      ],
+      "scam_types": [
+        "Sextortion_Blackmail"
+      ],
+      "hit_count": 2,
+      "notes": []
+    }
+  },
+  "phone": {
+    "9876543210": {
+      "first_seen": "2026-02-03T01:53:00.804850",
+      "last_seen": "2026-02-03T01:53:00.804850",
+      "sessions": [
+        "marathon-1770063780-Ele"
+      ],
+      "scam_types": [
+        "Utility_Bill_Scam"
+      ],
+      "hit_count": 1,
+      "notes": []
+    }
+  },
+  "wallet": {}
+}

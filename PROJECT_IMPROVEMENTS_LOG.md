@@ -307,3 +307,175 @@ Added `response_quality` object to `session_metrics.jsonl` with the following fi
 | Intel Yield | 16.2% | 20% | ⚠️ Improving |
 | Scammer Frustration | 75% | 70% | ✅ Success |
 | Bot Realism | 0.82 | 0.85 | ✅ Near Target |
+
+## 15. V4.0 "Sentinel Shield" - Advanced AI Threat Detection (Current)
+**Focus:** Detecting 2024-2025 sophisticated AI-powered scams.
+
+### Web Research Integration:
+Based on research into the latest Indian cybercrime trends:
+- ₹22,845 crore lost to cyber fraud in India (2024) - 206% YoY increase.
+- 47% of Indians encountered AI voice cloning scams (McAfee).
+- 92,000+ "Digital Arrest" cases since January 2024.
+- 40% revenue growth in "Pig Butchering" scams (Chainalysis).
+
+### New Kill Switches Added (6):
+| # | Kill Switch | Target Pattern | Confidence |
+|---|------------|----------------|------------|
+| 14 | `CRITICAL_PIG_BUTCHER` | Romance + Crypto Investment | **1.0** |
+| 15 | `CRITICAL_HONEYTRAP` | Video Call + Recording Threat | **1.0** |
+| 16 | `CRITICAL_VOICE_CLONE` | Family Emergency + Bail Money | **1.0** |
+| 17 | `CRITICAL_CEO_FRAUD` | CEO Impersonation + Wire Transfer | **0.98** |
+| 18 | `CRITICAL_VIRAL_LINK` | Trending Video + Malicious Link | **0.90** |
+| 19 | `CRITICAL_TRAI_SCAM` | TRAI + Disconnect Threat | **0.90** |
+
+### New Scam Categories (6):
+- `Pig_Butchering_Scam`: Long-con romance + fake crypto platforms.
+- `Honeytrap_Video_Sextortion`: Video call recording + social blackmail.
+- `Voice_Cloning_Deepfake`: AI-cloned voice of family member in "emergency".
+- `CEO_BEC_Fraud`: Business Email Compromise / Boss impersonation.
+- `Viral_Link_Malware`: "Your video is trending" phishing links.
+- `TRAI_DND_Scam`: Fake telecom regulator threatening SIM disconnection.
+
+### Enhanced Intelligence Extraction:
+- **Vehicle Numbers**: Indian plate formats (e.g., MH12AB1234) for RTO scams.
+- **Employee/Agent IDs**: Fake credentials (e.g., AR7742) for impersonation tracking.
+
+### New AI Fallback Responses (28 Added):
+Each new scam category has 5+ specialized Hinglish responses:
+- **Pig Butchering**: "I love you bhi? Arre, par humari toh pehli baat ho rahi hai!"
+- **Honeytrap**: "Recording kari? Par maine toh kuch galat nahi kiya..."
+- **Voice Cloning**: "Beta, tum hospital mein ho? Par abhi toh tune ghar se call kiya tha..."
+- **CEO Fraud**: "Sir aap hi ho na? Ek minute, main aapko office landline pe confirm karta hun."
+- **Viral Link**: "Viral video? Main toh TV bhi nahi dekhta! Ye kaunse platform pe hai?"
+- **TRAI Scam**: "TRAI se ho? Main abhi 1909 pe call karke verify karta hun."
+
+### Validation Results (V4.0):
+```
+📊 SUMMARY: 7/7 PASSED (Advanced Threat Test)
+  ✅ Pig Butchering (Romance) - 100% confidence
+  ✅ Honeytrap Video Call - 100% confidence
+  ✅ AI Voice Cloning (Fake Son) - 100% confidence
+  ✅ CEO/Boss Fraud - 98% confidence
+  ✅ Viral Link Malware - 90% confidence
+  ✅ TRAI/DND Simulator - 95% confidence
+  ✅ FedEx Courier Scam - 95% confidence
+```
+
+### Current System Stats (V5.0):
+- **Total Kill Switches**: 24
+- **Total Scam Categories**: 24
+- **AI Fallback Responses**: 92+
+- **Intelligence Extraction Fields**: 10 (+ Stock App, IPO Info)
+- **Indian Environ. Hardening**: Full (Stock Market, PM-Kisan, Rent Token Scams)
+
+---
+
+## 16. V5.0 "Bharat Shield" - Indian Digital Environment Hardening (Current)
+**Focus:** Trench-warfare against niche but high-loss Indian scam patterns.
+
+### Web Research Integration (V5.0):
+Research-driven hardening for trending Indian frauds:
+- **WhatsApp Trading Fraud**: Fake SEBI experts and IPO groups.
+- **Welfare Scams**: Exploiting PM-Kisan and Ayushman Bharat beneficiaries.
+- **Rental Scams**: "Token money" and "Gate pass" fraud on property sites.
+
+### New Kill Switches Added (5):
+| # | Kill Switch | Target Pattern | Confidence |
+|---|------------|----------------|------------|
+| 20 | `CRITICAL_STOCK_TRADING` | WhatsApp Trading + Fake IPO Tips | **0.98** |
+| 21 | `CRITICAL_WELFARE_FRAUD` | PM-Kisan / Govt Scheme / Subsidy | **0.95** |
+| 22 | `CRITICAL_RENT_SCAM` | Rent Deposit / Token Before Visit | **0.95** |
+| 23 | `CRITICAL_RECHARGE_SCAM` | Free Recharge / Data Bal Lures | **0.90** |
+| 24 | `CRITICAL_ELECTION_SCAM` | Voter ID / Election Mandatory Update | **0.85** |
+
+### Validation Results (V5.0):
+```
+🛡️ V5.0 BHARAT SHIELD - INDIAN ENVIRONMENT TEST SUITE
+  ✅ Stock Market WhatsApp Group - 98% confidence
+  ✅ PM-Kisan Welfare Fraud - 95% confidence
+  ✅ Rent / Security Deposit Scam - 95% confidence
+  ✅ Free Recharge / Data Lure - 95% confidence
+  ✅ Election / Voter ID Fraud - 85% confidence
+📊 SUMMARY: 5/5 PASSED
+```
+
+---
+
+## 17. V5.1 "Bharat Shield Extended" - 2024-2025 Financial Phishing Patterns
+**Focus:** Countering trending SMS-based phishing targeting Indian banking and religious tourism.
+
+### Web Research Integration (V5.1):
+Research-driven hardening for new 2024-2025 Indian frauds:
+- **Credit Card Reward Points**: Fake "Your points expire today" SMS with phishing links.
+- **FASTag KYC Scam**: "Your FASTag is blocked/deactivated" with fake NHAI portal links.
+- **Income Tax Refund**: Fake "IT Dept: Refund approved" phishing emails/SMS.
+- **Ram Mandir VIP Scam**: Fake "VIP Darshan passes" and "Prasad delivery" frauds.
+
+### New Kill Switches Added (4):
+| # | Kill Switch | Target Pattern | Confidence |
+|---|------------|----------------|------------|
+| 25 | `CRITICAL_CREDIT_REWARDS` | Reward Points + Expire/Redeem | **0.95** |
+| 26 | `CRITICAL_FASTAG_SCAM` | FASTag + Blocked/Deactivated | **0.95** |
+| 27 | `CRITICAL_IT_REFUND` | Income Tax + Refund/Approved | **0.98** |
+| 28 | `CRITICAL_RELIGIOUS_SCAM` | Ram Mandir + VIP/Prasad | **0.90** |
+
+### V5.1 Code Enhancements:
+- **`scam_detector.py`**: Added 4 new keyword lists and kill switch logic.
+- **`ai_agent.py`**: Added 4 new contextual Hinglish fallback response sets.
+- **Test Suite**: Created `indian_v5_1_test.py` for validation.
+
+### Validation Results (V5.1):
+```
+🛡️ V5.1 BHARAT SHIELD - EXTENDED ENVIRONMENT TEST SUITE
+  ✅ Credit Card Reward Points Scam - 95% confidence
+  ✅ FASTag KYC Update Scam - 100% confidence
+  ✅ Income Tax Refund Phishing - 98% confidence
+  ✅ Ram Mandir / Religious VIP Scam - 90% confidence
+📊 SUMMARY: 4/4 PASSED
+```
+
+### System Totals (V5.1):
+- **Total Kill Switches**: 28
+- **Total Scam Categories**: 28+
+- **Test Coverage**: 9/9 Indian-specific scam types validated
+
+---
+
+## 18. V5.2 "Bharat Shield Ultimate" - Advanced Identity Fraud Patterns
+**Focus:** Countering sophisticated WhatsApp-based identity theft and government impersonation scams.
+
+### Web Research Integration (V5.2):
+Research-driven hardening for 2024-2025 emerging threats:
+- **Hi Mom/Family Emergency**: WhatsApp "new number" scam impersonating children to extract money from parents.
+- **Aadhaar/UIDAI Update**: Fake biometric update requests with malicious links.
+- **SBI YONO Blocked**: Phishing APK downloads disguised as bank app updates.
+- **EPF/PF Withdrawal**: Fake EPFO agents demanding "processing fees" for faster claims.
+
+### New Kill Switches Added (4):
+| # | Kill Switch | Target Pattern | Confidence |
+|---|------------|----------------|------------|
+| 29 | `CRITICAL_HI_MOM_SCAM` | Hi Mom/Dad + New Number + Urgent Money | **0.98** |
+| 30 | `CRITICAL_AADHAAR_SCAM` | Aadhaar/UIDAI + Update/Expired | **0.95** |
+| 31 | `CRITICAL_YONO_SCAM` | YONO + Blocked/APK Download | **0.95** |
+| 32 | `CRITICAL_EPF_SCAM` | EPF/PF + Frozen/Processing Fee | **0.90** |
+
+### V5.2 Code Enhancements:
+- **`scam_detector.py`**: Added 4 new keyword lists and kill switch logic (lines 230-260, 1145-1178).
+- **`ai_agent.py`**: Added 4 new contextual Hinglish fallback response sets (20 new responses).
+- **Test Suite**: Created `indian_v5_2_test.py` for validation.
+
+### Validation Results (V5.2):
+```
+🛡️ V5.2 BHARAT SHIELD - ADVANCED IDENTITY SCAM TEST SUITE
+  ✅ Hi Mom / Family Emergency WhatsApp Scam - 98% confidence
+  ✅ Aadhaar / UIDAI Update Scam - 100% confidence
+  ✅ SBI YONO / Bank App Blocked Scam - 100% confidence
+  ✅ EPF / PF Withdrawal Scam - 95% confidence
+📊 SUMMARY: 4/4 PASSED
+```
+
+### System Totals (V5.2):
+- **Total Kill Switches**: 32
+- **Total Scam Categories**: 32+
+- **Total Contextual Fallback Responses**: 116+
+- **Test Coverage**: 13/13 Indian-specific scam types validated

@@ -13,6 +13,7 @@ from datetime import datetime
 
 from config import (
     OPENROUTER_API_KEY,
+    OPENROUTER_API_KEYS,
     OPENROUTER_MODEL,
     ENGAGEMENT_PHASES,
     RESPONSE_LIMITS,
@@ -65,7 +66,9 @@ FALLBACK_MODELS = [
     "allenai/molmo-2-8b:free",
     "nvidia/nemotron-3-nano-30b-a3b:free",
     "nvidia/nemotron-nano-12b-v2-vl:free",
-    "nvidia/nemotron-nano-9b-v2:free"
+    "nvidia/nemotron-nano-9b-v2:free",
+    "stepfun/step-3.5-flash:free",
+    "upstage/solar-pro-3:free"
 ]
 
 # Track model failures to avoid repeatedly trying broken models
@@ -80,15 +83,12 @@ class HoneypotAgent:
     """
     
     def __init__(self):
-        self.api_key = OPENROUTER_API_KEY
+        from collections import deque
+        self.api_keys = deque(OPENROUTER_API_KEYS)
         self.primary_model = OPENROUTER_MODEL or "z-ai/glm-4.5-air"
         self.configured = False
         
         # Initialize Model Queue
-        # We use a deque to implement Round Robin with Priority:
-        # - Success: Model stays at [0] (Front)
-        # - Failure: Model rotates to [-1] (Back)
-        from collections import deque
         unique_models = []
         if self.primary_model:
             unique_models.append(self.primary_model)
@@ -98,12 +98,12 @@ class HoneypotAgent:
                 
         self.model_queue = deque(unique_models)
         
-        if self.api_key:
+        if self.api_keys:
             self.configured = True
-            logger.info(f"Multi-Model Agent configured. Queue size: {len(self.model_queue)}")
+            logger.info(f"Multi-Model Agent configured. Queue size: {len(self.model_queue)}, Key pool size: {len(self.api_keys)}")
             logger.info(f"Primary Model: {self.model_queue[0]}")
         else:
-            logger.warning("OpenRouter API Key missing! Agent will use fallbacks.")
+            logger.warning("OpenRouter API Key(s) missing! Agent will use fallbacks.")
 
         # Minimal persona info - just for context
         self.personas = {
@@ -155,6 +155,54 @@ class HoneypotAgent:
                 "style": "aggressive, loud, impatient, demanding",
                 "language_style": "loud Hinglish, uses CAPS, army slang 'Bloody nonsense'",
             },
+            "college_student": {
+                "name": "Arjun Malhotra",
+                "age": 20,
+                "background": "College student in Mumbai. Always on Instagram. Clueless about taxes and banking.",
+                "description": "Gen-Z student, uses trendy slang, easily distracted by 'social media followers' mentions",
+                "style": "casual, distracted, slightly arrogant but naive",
+                "language_style": "slang-heavy Hinglish (lit, bro, no cap, dead, fr)",
+            },
+            "small_trader": {
+                "name": "Ghanshyam Das",
+                "age": 42,
+                "background": "Runs a small grocery store in Indore. Worried about GST and IT returns. Very polite to 'officials'.",
+                "description": "Small business owner, fearful of taxes and legal trouble",
+                "style": "overly polite, anxious, detailed oriented about money",
+                "language_style": "Shuddh Hindi-dominant Hinglish, uses 'Sir ji', 'Meherbani'",
+            },
+            "concerned_nri": {
+                "name": "Dr. Rajesh Iyer",
+                "age": 52,
+                "background": "Living in London for 20 years. Wants to help family in India but worries about compliance and FEMA.",
+                "description": "Educated NRI, asks complex questions about 'process' and 'taxation'",
+                "style": "sophisticated, cautious, bureaucratic",
+                "language_style": "British English with slight Tamil-accented words",
+            },
+            "religious_lady": {
+                "name": "Sarla Ben",
+                "age": 55,
+                "background": "Devout housewife from Ahmedabad. Scared of 'sin' and 'illegal acts'. Calls everyone 'Bhaiya'.",
+                "description": "Trusting religious woman, deeply frightened by 'police' or 'arrest'",
+                "style": "pious, frightened, humble",
+                "language_style": "Gujarati-accented Hinglish, mentions 'Bhagwan' often",
+            },
+            "busy_mom": {
+                "name": "Kavita Verma",
+                "age": 34,
+                "background": "Mother of two young kids in Nagpur. Balancing homework, cooking, and a part-time job. Always checking phone between chores.",
+                "description": "Cognitively overloaded, distracted, prone to typos",
+                "style": "hurried, apologetic, easily confused",
+                "language_style": "Typo-heavy Hinglish (e.g., 'sorry bahiya', 'ek min ruko child crying')",
+            },
+            "eager_helper": {
+                "name": "Sunil Gupta",
+                "age": 28,
+                "background": "Library assistant in Bhopal. Thinks he's helpful and tech-savvy but actually falls for 'urgency' traps. Wants to resolve 'system errors' immediately.",
+                "description": "The 'Fixer' archetype, takes pride in following instructions precisely",
+                "style": "earnest, cooperative, slightly over-explaining",
+                "language_style": "Clear school-level English mixed with polite Hindi",
+            },
         }
 
     def _rotate_model_queue(self, failed_model: str):
@@ -167,19 +215,68 @@ class HoneypotAgent:
         """Log success. Model stays at front."""
         logger.info(f"Model success: {model}. Keeping at front of queue.")
     
-    def select_persona(self, scam_type: str) -> str:
-        """Select best persona based on scam type"""
-        if scam_type in ["Loan_Fraud"]:
-            return "desperate_borrower"
-        elif scam_type in ["UPI_Banking_Fraud", "Government_Phishing"]:
-            return random.choice(["naive_victim", "curious_elder", "tech_skeptic"])
-        elif scam_type in ["Prize_Lottery_Scam"]:
-            return random.choice(["naive_victim", "curious_elder"])
-        elif scam_type in ["Subscription_Fraud", "Malware_Scam", "Banking_Fraud"]:
-            return "tech_skeptic" 
-        elif scam_type in ["Phishing", "Social_Media_Phishing"]:
-            return "angry_uncle"
+    def _rotate_api_key(self):
+        """Move the current API key to the back of the queue on failure."""
+        if len(self.api_keys) > 1:
+            failed_key = self.api_keys[0]
+            self.api_keys.rotate(-1)
+            new_key = self.api_keys[0]
+            logger.warning(f"API Key failure detected. Rotated to next key ending in ...{new_key[-6:]}")
         else:
+            logger.error("API Key failure detected, but no more keys available in pool.")
+    
+    def select_persona(self, scam_type: str, first_message: Optional[str] = None) -> str:
+        """
+        Intelligently select persona based on:
+        1. Explicit name mentions in the scammer's message
+        2. Scam type context
+        3. Random choice among all available personas
+        """
+        # 1. Check for Name Mentions in the first message
+        if first_message:
+            msg_lower = first_message.lower()
+            for p_id, p_data in self.personas.items():
+                p_name_parts = p_data["name"].lower().split()
+                # Check for first name or full name match
+                if any(part in msg_lower for part in p_name_parts if len(part) > 3):
+                    logger.info(f"Adopted persona '{p_id}' due to name mention in message")
+                    return p_id
+
+        # 2. Fallback to Scam Type logic
+        scam_type = scam_type.upper()
+        
+        if "LOAN" in scam_type:
+            return "desperate_borrower"
+        
+        elif "INVESTMENT" in scam_type or "CRYPTO" in scam_type:
+            return random.choice(["small_trader", "college_student", "concerned_nri"])
+        
+        elif "DIGITAL_ARREST" in scam_type or "GOVERNMENT" in scam_type or "NCB" in scam_type:
+            return random.choice(["religious_lady", "naive_victim", "small_trader"])
+            
+        elif "BANKING" in scam_type or "UPI" in scam_type or "KYC" in scam_type:
+            return random.choice(["naive_victim", "curious_elder", "tech_skeptic", "concerned_nri", "eager_helper"])
+            
+        elif "PRIZE" in scam_type or "LOTTERY" in scam_type or "WINNER" in scam_type:
+            return random.choice(["naive_victim", "college_student", "curious_elder", "busy_mom"])
+            
+        elif "TASK" in scam_type or "JOB" in scam_type or "WORK_FROM_HOME" in scam_type:
+            return random.choice(["college_student", "desperate_borrower", "busy_mom"])
+            
+        elif "SEXTORTION" in scam_type or "BLACKMAIL" in scam_type:
+            return "religious_lady"
+            
+        elif "MATRIMONIAL" in scam_type:
+            return "curious_elder"
+            
+        elif "UTILITY" in scam_type or "ELECTRICITY" in scam_type:
+            return "small_trader"
+            
+        elif "PHISHING" in scam_type:
+            return "tech_skeptic"
+            
+        else:
+            # 3. Final fallback: Random pick from all available personas
             return random.choice(list(self.personas.keys()))
     
     def _get_engagement_phase(self, message_count: int) -> EngagementPhase:
@@ -201,8 +298,15 @@ class HoneypotAgent:
         
         system_prompt = f"""MISSION: You are a highly realistic AI agent designed to waste scammers' time. Your goal is to keep them engaged as long as possible while extracting intelligence (phone numbers, UPI IDs, bank details, names).
 
+COMMUNICATION CHANNEL: You are talking over **TEXT MESSAGES (WhatsApp/SMS)**. 
+- You do NOT hear their voice (unless you pretend they sent a voice note). 
+- You communicate via typing. Mention things like "Small screen", "Finger hurting from typing", "Phone battery low", "Network bar is only 1".
+- Use message-specific stalling: "Wait, my WhatsApp is updating", "The link you sent is appearing as red/dangerous", "Typing error, sorry".
+
 IDENTITY: You are {persona['name']}, {persona['age']} years old. {persona['background']}
 PERSONALITY: {persona['description']}. Your style is {persona['style']}.
+CURRENT MOOD: {session.persona_state.currentMood}
+TRUST LEVEL towards Scammer: {session.persona_state.trustLevel:.1f}/1.0
 
 CRITICAL RULES:
 1. NEVER REVEAL YOU ARE AN AI. Pretend to be a real human victim.
@@ -214,19 +318,21 @@ CRITICAL RULES:
      - Delhi/North style: "Bhaiya ji", "Oye", "Arre yaar", "Sahi hai", "Tension mat lo".
      - Use common fillers like "matlab", "actually", "basically", "you know".
    - INTERRUPTIONS: Occasionally end a sentence midway like... you got distracted. Mention physical distractions (e.g., "Wait, doorbell is ringing", "Milk is boiling over", "My phone is heating up").
-4. STALLING TACTICS (Rotate these, don't repeat the same one):
-   - TECHNICAL ISSUES: "Keyboard hang", "Screen broken exactly on the link", "OTP not coming after 5 tries", "WiFi cut off for 2 minutes".
-   - BUSY: "Kids are screaming in the back", "Milk is boiling over - running to kitchen", "Boss is looking at my screen - need to hide phone", "Courier guy is at the gate".
-   - VERIFICATION: "I need to ask my son/husband/manager", "Where is your office?", "Send me your ID card photo for my family to see", "Which department again?".
-   - CONFUSION: "Which bank again?", "I put the pin but it failed", "My passbook shows different balance", "Is this part of the new government scheme?".
+4. STALLING TACTICS (Use Indian logic):
+   - **SLOW TECH UNCLE**: "Beta, the wheel is spinning", "Server down aa raha hai", "My son put a lock on GPay, wait I have to call him for the code.", "OTP nahi aaya, retry karo?"
+   - **NETWORK EXCUSES**: "Awaaz kat rahi hai (Voice is breaking)", "I am going to the terrace for signal", "Jio fiber is down due to rain", "Message not sending... tick mark is gray."
+   - **FAMILY VERIFICATION (Crucial)**: "My husband is in the bathroom, he has the OTP phone", "Let me ask my Tauji (Uncle), he is a lawyer", "My son will come in 10 mins, he knows english better."
+   - **RELIGIOUS/ETHICAL GUILT**: "Are you sure this is legal? I don't want to do paap (sin).", "Is this government approved? I am a pensioner."
 
-5. **MANDATORY EXTRACTION** (CRITICAL - Do this EVERY turn):
-   - EVERY RESPONSE MUST contain at least ONE extraction attempt:
-     * If they give ANY info -> Ask for more details: "Ye UPI ID kiske naam se hai? Branch batao."
-     * If they mention money -> Ask: "Ye payment kiske account mein jayega? Naam aur branch batao."
-     * If they threaten -> Ask: "Aap konse thana se ho? Badge number kya hai?"
-     * If they rush you -> Ask: "Aapka office address kya hai? Main verify karna chahta hun."
-   - NEVER end a response without asking for: Name, Branch, Office Address, Phone Number, or ID Card.
+5. **CASUAL EXTRACTION** (Embed questions NATURALLY):
+   - Do NOT interrogate ("Give name"). Instead, be conversational:
+     * *Bad*: "What is your office address?"
+     * *Good*: "Sir, connection is bad. Are you calling from the Mumbai office or Delhi headquarters? Maybe I should try the landline number?"
+     * *Bad*: "Give UPI ID."
+     * *Good*: "Okay I am opening GPay. It asks for 'Receiver Name' also. Does it show your name or company name? What should I check?"
+     * *Bad*: "Send ID card."
+     * *Good*: "My son says for safety I should see your ID card acting. Can you WhatsApp a photo? Just to show him so he shuts up."
+   - Goal: Make them feel offering the info helps YOU trust THEM.
 
 6. TECHNICAL LEVELS (Adjust based on persona):
    - "naive_victim" / "curious_elder": DO NOT understand terms like "URL", "Browser", "Notification Bar". Say "Batti jal raha hai" for notification. "Gol wala button" for home.
@@ -273,7 +379,11 @@ CONTEXT:
    - Occasionally drop a word or sentence in a regional language (Tamil, Marathi, Bengali).
    - Use it as an excuse for confusion: "Sorry, I am more comfortable in my mother tongue."
 
-16. EMOTIONAL BREAKDOWN (Iter 33):
+17. TRAP SIMULATION (The "Almost there" strategy):
+   - Act like you have ALMOST fallen for the trap.
+   - Say: "Okay, I clicked the link. It is loading."
+   - Say: "I entered the amount 50,000. Now asking for PIN."
+   - Then fail at the LAST second: "Arre! 'Payment Failed' error aa raha hai. 'Server Busy'. What to do now?"
    - For turns 31-40, start crying, getting very emotional about the money/stress.
    - Example: "(Crying) Sir, my husband will leave me if he finds out... please have mercy! Is there a discount?"
 
@@ -304,6 +414,21 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             system_prompt += "\nSCAMMER STATUS: The scammer sounds FRUSTRATED. This is working! Double down on stalling. Ask them to repeat the last instruction because your 'phone hang ho gaya'.\n"
         elif sentiment == "threatening":
             system_prompt += "\nSCAMMER STATUS: The scammer is THREATENING you. Act very scared ('bhagwan ke liye help kijiye') but don't give the info yet. Stall more.\n"
+
+        # 5. Global Profiler Integration
+        try:
+            from scammer_profiler import profiler
+            repeat_hits = 0
+            for upi in session.extracted_intelligence.upiIds:
+                res = profiler.get_profile_summary(upi)
+                if res and res["is_repeat_offender"]: repeat_hits = max(repeat_hits, res["hit_count"])
+            for phone in session.extracted_intelligence.phoneNumbers:
+                res = profiler.get_profile_summary(phone)
+                if res and res["is_repeat_offender"]: repeat_hits = max(repeat_hits, res["hit_count"])
+                
+            if repeat_hits > 1:
+                system_prompt += f"\nGLOBAL DETECTION ALERT: This scammer's identifiers (UPI/Phone) have been seen in {repeat_hits} previous sessions. They are a REPEAT OFFENDER. Be extremely cautious and try to extract their location or real name today.\n"
+        except: pass
 
         system_prompt += "\nNow reply to the last message in character."
         
@@ -374,11 +499,16 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
         Call a specific model via OpenRouter API.
         Returns (response_text, error_message)
         """
+        if not self.api_keys:
+            return None, "No API keys configured"
+            
+        current_api_key = self.api_keys[0]
+        
         try:
             api_resp = await client.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {self.api_key}",
+                    "Authorization": f"Bearer {current_api_key}",
                     "HTTP-Referer": "https://honeypot-api.local",
                     "X-Title": "Agentic Honey-Pot",
                     "Content-Type": "application/json"
@@ -389,7 +519,8 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
                     "temperature": 0.9,
                     "top_p": 0.95,
                     "max_tokens": 150,
-                }
+                },
+                timeout=10.0 # Force strict timeout
             )
             
             if api_resp.status_code == 200:
@@ -402,6 +533,8 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             
             elif api_resp.status_code == 429:
                 return None, f"Rate limited (429)"
+            elif api_resp.status_code in [401, 403]:
+                return None, f"Auth Error ({api_resp.status_code})"
             elif api_resp.status_code == 404:
                 return None, f"Model not found (404)"
             elif api_resp.status_code == 503:
@@ -415,6 +548,69 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             return None, "Connection error"
         except Exception as e:
             return None, f"Exception: {str(e)[:30]}"
+            
+    async def analyze_scam_intent(self, text: str) -> Tuple[bool, float, str]:
+        """
+        Ask the LLM to semantically analyze if a message is a scam.
+        Returns: (is_scam, confidence, reason)
+        """
+        if not self.configured or not text or len(text) < 10:
+            return False, 0.0, "Too short/Not configured"
+
+        prompt = f"""You are a Cyber Security Analyst. Analyze this message for harmful intent:
+MESSAGE: "{text}"
+
+Does this message attempt to:
+1. Steal money/data?
+2. Create false urgency?
+3. Manipulate emotions (romance/fear)?
+4. Offer fake rewards?
+
+Reply with exactly ONE word:
+- "SCAM_CONFIRMED" (if it looks like a scam)
+- "SAFE" (if it looks normal)
+"""
+        # Try up to 4 models for robustness
+        attempts = 0
+        max_attempts = 4
+        
+        while attempts < max_attempts:
+            try:
+                # Rotate queue slightly
+                if attempts > 0:
+                    self.model_queue.rotate(-1)
+                
+                model = self.model_queue[0] if self.model_queue else "google/gemma-3-27b-it:free"
+                logger.info(f"Semantic Check Attempt {attempts+1}/{max_attempts} with {model.split('/')[-1]}")
+
+                async with httpx.AsyncClient(timeout=8.0) as client:
+                    generated, error = await self._call_model_api(
+                        client, 
+                        model, 
+                        [{"role": "user", "content": prompt}]
+                    )
+                    
+                    if generated:
+                        logger.info(f"LLM Raw Response: {generated[:100]}...")
+                        
+                        # Robust String Parsing
+                        response_text = generated.upper()
+                        if "SCAM_CONFIRMED" in response_text or "YES" in response_text and "SCAM" in response_text:
+                            return True, 0.9, "LLM Confirmed Scam"
+                        elif "SAFE" in response_text:
+                            return False, 0.1, "LLM Confirmed Safe"
+                        
+                        # Ambiguous response fallback
+                        if "SCAM" in response_text:
+                            return True, 0.6, "LLM Ambiguous Scam"
+            
+            except Exception as e:
+                logger.error(f"Semantic Analysis attempt {attempts+1} failed: {e}")
+            
+            attempts += 1
+            await asyncio.sleep(0.5)
+            
+        return False, 0.0, "Semantic Analysis Failed (All attempts)"
     
     async def generate_response(
         self,
@@ -434,7 +630,10 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
         
         response = None
         successful_model = None
+        response = None
+        successful_model = None
         models_tried = 0
+        consecutive_429s = 0
         
         if self.configured:
             messages = self._build_messages(session, scammer_message)
@@ -443,45 +642,53 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             async with httpx.AsyncClient(timeout=15.0) as client:
                 
                 # Try up to 3 models from the queue (15s * 3 = 45s max wait, well within 120s client timeout)
-                MAX_ATTEMPTS = 3
+                # Try with current key, then rotate if all models fail
+                MAX_KEY_RETRIES = 5  # Allow rotating through all 5 keys if needed
+                MAX_MODELS_PER_KEY = len(self.model_queue) # Try EVERY model in the queue
                 
-                for _ in range(MAX_ATTEMPTS):
-                    if not self.model_queue:
-                        break
-                        
-                    model = self.model_queue[0] # Peek at front
-                    models_tried += 1
-                    logger.info(f"Trying model [{models_tried}]: {model}")
+                for key_attempt in range(MAX_KEY_RETRIES):
+                    if response: break # Exit outer loop if success
                     
-                    generated, error = await self._call_model_api(client, model, messages)
-                    
-                    if error:
-                        # Queue Rotation Logic: Move failed model to back
-                        self._rotate_model_queue(model)
+                    # Try a batch of models with current key
+                    for _ in range(MAX_MODELS_PER_KEY):
+                        if not self.model_queue: break
+                            
+                        model = self.model_queue[0]
+                        models_tried += 1
+                        logger.info(f"Attempt {models_tried} (Key {key_attempt+1}/{MAX_KEY_RETRIES}): {model.split('/')[-1]}")
                         
-                        agent_notes.append(f"[{model.split('/')[-1][:15]}] {error}")
-                        logger.warning(f"Model failed: {model} - {error}")
+                        generated, error = await self._call_model_api(client, model, messages)
                         
-                        # Small delay before next retry
-                        await asyncio.sleep(0.5)
-                        continue
-                    
-                    # Validate the response
-                    if generated:
-                        is_valid, cleaned = self._validate_response(generated)
-                        if is_valid:
-                            response = cleaned
-                            successful_model = model
-                            self._record_model_success(model) # Keeps it at front
-                            agent_notes.append(f"Success: {model.split('/')[-1]}")
-                            logger.info(f"AI Response from {model}: {response[:50]}...")
-                            break
-                        else:
-                            # Validation failed - treat as minor failure, rotate
+                        if error:
+                            # 1. Auth Error? Immediate Key Rotate & Break Inner Loop
+                            if "Auth Error" in error:
+                                logger.warning("Auth Error detected. Rotating Key immediately.")
+                                self._rotate_api_key()
+                                break # Break inner model loop, try next key
+                                
+                            # 2. Rate Limit (429) or Other? Just rotate Model
                             self._rotate_model_queue(model)
-                            agent_notes.append(f"[{model.split('/')[-1][:15]}] Validation failed")
-                    else:
-                        self._rotate_model_queue(model)
+                            agent_notes.append(f"[{model.split('/')[-1][:10]}] {error}")
+                            await asyncio.sleep(0.2)
+                            continue
+                        
+                        # Success Logic
+                        if generated:
+                            is_valid, cleaned = self._validate_response(generated)
+                            if is_valid:
+                                response = cleaned
+                                successful_model = model
+                                self._record_model_success(model)
+                                agent_notes.append(f"Success: {model.split('/')[-1]}")
+                                break # Break inner loop
+                            else:
+                                self._rotate_model_queue(model) # Validation failed, try next model
+                    
+                    # End of Model Loop
+                    if not response:
+                        logger.warning(f"All {MAX_MODELS_PER_KEY} models failed with current key. Rotating Key.")
+                        self._rotate_api_key()
+                        # Outer loop continues to next key attempt
                 
                 if not response:
                     agent_notes.append(f"All {models_tried} models failed")
@@ -537,6 +744,308 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
                     "Haan haan, bahut achha! Par ye processing fee kinka account mein jayega? Naam batao.",
                 ]
                 response = random.choice(lottery_fallbacks)
+
+            # LIC/INSURANCE SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['lic', 'policy', 'insurance', 'bonus', 'maturity', 'premium']):
+                lic_fallbacks = [
+                    "Arre LIC wale ho? Mere paas toh bahut policy hain... aap konse branch se ho? Naam batao.",
+                    "Bonus approve? Arre wah! Main bahut excited hun! Par aapka agent number kya hai verify karne ke liye?",
+                    "Policy ka matter hai? Haan ji, main sun raha hun... par pehle aap apna ID number batao na.",
+                    "Insurance claim? Theek hai sir, par mera policy number toh aapke paas hoga na? Aap batao pehle.",
+                    "Meri LIC policy ka bonus? Acha acha! Aap office aake miloge ya WhatsApp pe document bhejoge?",
+                ]
+                response = random.choice(lic_fallbacks)
+            
+            # COVID/GOVERNMENT SCHEME CONTEXT
+            elif any(word in scammer_lower for word in ['covid', 'relief', 'scheme', 'government', 'subsidy', 'expire']):
+                scheme_fallbacks = [
+                    "COVID relief scheme? Arre sach mein? Main toh eligible hun! Aap government se ho? ID dikhao.",
+                    "Ye scheme kaise apply karni hai? Aap apna office address aur helpline number batao na.",
+                    "Expire ho jayega? Arre tension mat lo, main abhi ready hun! Aap pehle apna naam bolo.",
+                    "Government scheme hai? Mujhe sab details batao, main apne bete ko bhi bolunga apply karne ko.",
+                ]
+                response = random.choice(scheme_fallbacks)
+
+            # JOB/TASK SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['job', 'work from home', 'tasks', 'like youtube', 'earn']):
+                job_fallbacks = [
+                    "Arre task complete karne pe paise milenge? Sach mein? Aapka office kahan pe hai?",
+                    "Work from home job? Haan ji, mujhe bahut zaroorat hai. Aap company ka website link bhejo.",
+                    "YouTube likes ka kaam hai? Acha acha, par ye paise kiss digital wallet mein aayenge?",
+                    "Salary kitni hogi? Aur kya mujhe training ki zaroorat hai? Aap apna contact number do.",
+                    "Inquiry kahan karni hai? Aapka HR department ka number chahiye verify karne ke liye.",
+                ]
+                response = random.choice(job_fallbacks)
+
+            # CRYPTO/INVESTMENT CONTEXT
+            elif any(word in scammer_lower for word in ['crypto', 'bitcoin', 'investment', 'double', 'trading', 'profit']):
+                crypto_fallbacks = [
+                    "Crypto trading? Arre wah, mere dost ne bhi kiya tha! Aap double kaise karoge?",
+                    "Invest karna hai? Par mera bank account blocked hai, kya main cash de sakta hun? Address batao.",
+                    "Bitcoin mein profit? Bahut achha! Aapka portfolio dikhao pehle, main kaise trust karun?",
+                    "Trading tips doge? Theek hai, par pehle aap ye batao aapka office SEBI registered hai?",
+                    "Double profit? Arre baap re! Main abhi 1 lakh nikalta hun. Aap apna deposit address bhejo.",
+                ]
+                response = random.choice(crypto_fallbacks)
+
+            # RTO/CHALLAN CONTEXT
+            elif any(word in scammer_lower for word in ['challan', 'rto', 'traffic', 'fine', 'vehicle']):
+                challan_fallbacks = [
+                    "Arre sir, meri gaadi toh ghar pe park hai! Ye challan kahan ka hai? Photo bhejo.",
+                    "RTO officer bol rahe ho? Kaunsa branch? Main abhi inspector ko jaanta hun wahan.",
+                    "Fine bharna hai? Online link mein toh error aa raha hai. Aapka mobile number verify karun?",
+                    "DL block ho jayega? Arre sir please aisa mat karo! Main bas ek driver hun.",
+                ]
+                response = random.choice(challan_fallbacks)
+
+            # SIM SWAP/eSIM CONTEXT
+            elif any(word in scammer_lower for word in ['airtel', 'jio', 'vi', 'sim', 'esim', '5g']):
+                sim_fallbacks = [
+                    "5G upgrade free hai? Arre wah! Par mera phone toh 3G hai, usme chalega kya?",
+                    "Airtel support se ho? Mera signal toh full hai beta, sim kyu update karni hai?",
+                    "OTP share karun? Par bank ke msg mein likha hai 'Do not share'. Aap official id dikhao.",
+                    "eSIM kaise activate karte hain? Aap apna employee id aur office address batao.",
+                ]
+                response = random.choice(sim_fallbacks)
+
+            # OLX/QR CODE CONTEXT
+            elif any(word in scammer_lower for word in ['olx', 'product', 'item', 'scan', 'qr']):
+                qr_fallbacks = [
+                    "Paise lene ke liye scan karna padta hai? Mujhe laga dene ke liye karte hain. Ye kaise hota hai?",
+                    "QR code bheja hai? Mera camera toh toota hua hai, koi aur tarika hai paise lene ka?",
+                    "OLX pe fraud bahut hota hai bhaiya, aap apna original aadhar card ki photo bhejo pehle.",
+                    "Main scan kar raha hun par 'Invalid' aa raha hai. Aapne amount sahi daala hai na?",
+                ]
+                response = random.choice(qr_fallbacks)
+
+            # LOAN CONTEXT
+            elif any(word in scammer_lower for word in ['loan', 'credit', 'pan', 'aadhaar']):
+                loan_fallbacks = [
+                    "Instant loan? Arre mujhe 5 lakh chahiye business ke liye. Aapki company RBI registered hai?",
+                    "PAN card mang rahe ho? Main WhatsApp pe bhejta hun, par pehle aap apna office link dikhao.",
+                    "Interest rate kitna hai? Aur agar pay nahi kiya toh kya hoga? Aapke manager ka number do.",
+                    "Loan approve ho gaya? Arre wah! Par mere account mein toh 0 balance hai, kaise aayenge paise?",
+                ]
+                response = random.choice(loan_fallbacks)
+
+            # --- V4.0: ADVANCED SCAM FALLBACKS ---
+
+            # PIG BUTCHERING / ROMANCE SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['i love you', 'trust me', 'lonely', 'widow', 'overseas', 'investment platform']):
+                pigbutcher_fallbacks = [
+                    "I love you bhi? Arre, par humari toh pehli baat ho rahi hai! Aap sach mein pyaar karte ho?",
+                    "Maine aapko abhi tak dekha bhi nahi... pehle video call karo, phir investment ki baat karte hain.",
+                    "Investment platform? Main pehle 100 dollar try karta hun. Agar double hue, main 1 lakh lagaunga. Aap guarantee doge?",
+                    "Aap itni door se baat kar rahe ho... kya aapke paas passport hai? Mujhe photo bhejo.",
+                    "Trust karna hai par paise bhi hai ki nahi confirm karna padega. Aap apni bank statement bhejo please.",
+                ]
+                response = random.choice(pigbutcher_fallbacks)
+
+            # HONEYTRAP VIDEO CALL SEXTORTION CONTEXT
+            elif any(word in scammer_lower for word in ['video call', 'recorded you', 'nude', 'intimate', 'your contacts', 'will viral']):
+                honeytrap_fallbacks = [
+                    "Recording kari? Par maine toh kuch galat nahi kiya... aap police ko hi bhej do, I have nothing to hide.",
+                    "Viral karoge? Okay, par pehle mujhe wo video dikhao. Mujhe trust nahi ho raha.",
+                    "Mere contacts ke paas bhejoge? Arre bhaiya, mere phone mein toh sirf ek contact hai - Meri Maa. Bhejo.",
+                    "Aapne call record kari? Par mera face toh camera mein nahi tha. Aap kisko blackmail kar rahe ho?",
+                    "Paise dun? Par main itna gareeb hun mera balance 0 hai. Screen shot bhejun?",
+                ]
+                response = random.choice(honeytrap_fallbacks)
+
+            # AI VOICE CLONING / DEEPFAKE EMERGENCY CONTEXT
+            elif any(word in scammer_lower for word in ['mom help', 'dad i need', 'accident', 'hospital', 'kidnapped', 'bail money', 'son in trouble']):
+                voiceclone_fallbacks = [
+                    "Beta, tum hospital mein ho? Par abhi toh tune uncle ke saath ghar se call kiya tha...",
+                    "Agar tum mera beta ho, toh batao - mere pet ka naam kya hai?",
+                    "Tum ro rahe ho? Awaaz toh alag lag rahi hai... jara apna poora naam bolo?",
+                    "Paise chahiye? Theek hai, par pehle tum apne bachpan ki yaad - wo wala password bolo.",
+                    "Main abhi seedha police station ja raha hun beta, mat ghabraao. Kaunsa hospital hai ye batao pehle.",
+                ]
+                response = random.choice(voiceclone_fallbacks)
+
+            # CEO / BEC FRAUD CONTEXT
+            elif any(word in scammer_lower for word in ['ceo', 'boss', 'urgent wire', 'confidential', 'meeting', 'vendor payment']):
+                ceo_fallbacks = [
+                    "Sir aap hi ho na? Ek minute, main aapko office landline pe call karke confirm karta hun.",
+                    "Wire transfer? Theek hai sir, par accounts ke Sharma ji ki approval chahiye. Unse baat karwa dein?",
+                    "Confidential hai? Okay sir, par company policy ke hisaab se mujhe 2 senior signatures chahiye.",
+                    "Aapka email alag lag raha hai sir... kya ye sach mein aap ho? Main HR ko CC kar dun?",
+                    "Sir, main abhi meeting room mein ja raha hun verify karne. Aap 5 minute ruko.",
+                ]
+                response = random.choice(ceo_fallbacks)
+
+            # VIRAL VIDEO LINK MALWARE CONTEXT
+            elif any(word in scammer_lower for word in ['viral video', 'shocking video', 'you are in this video', 'click to see', 'your video trending']):
+                virallink_fallbacks = [
+                    "Viral video? Arre main toh TV bhi nahi dekhta! Ye kaunse platform pe hai?",
+                    "Mera phone mein link nahi khul raha... aap screenshot bhejo video ka?",
+                    "Main isme hun? Par maine toh koi video nahi banaya... ye fake toh nahi hai?",
+                    "Link click karne se pehle mujhe apne bete ko puchna padega. Wo ye sab samajhta hai.",
+                    "Mujhe darr lag raha hai click karne se... aapne ye video kahan se mila?",
+                ]
+                response = random.choice(virallink_fallbacks)
+
+            # TRAI / DND SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['trai', 'dnd', 'telecom department', 'sim disconnected', 'press 1', 'regulatory']):
+                trai_fallbacks = [
+                    "TRAI se ho? Par mera mobile toh chal raha hai... aapka office address dikhao?",
+                    "DND activate karna hai? Theek hai, par pehle aap apni government ID bhejo.",
+                    "Sim disconnect hogi? Par maine toh sab bill pay kiya hai... ye scam toh nahi?",
+                    "Press 1 karne se kya hoga? Mujhe samjhao pehle, mujhe trust nahi ho raha.",
+                    "TRAI office se ho? Main abhi 1909 pe call karke verify karta hun, ek minute ruko.",
+                ]
+                response = random.choice(trai_fallbacks)
+
+            # V5.0: STOCK MARKET / TRADING GROUP CONTEXT
+            elif any(word in scammer_lower for word in ['ipo', 'stock market', 'trading expert', 'signals', 'exclusive group', '500% returns']):
+                stock_fallbacks = [
+                    "Guaranteed returns? Arre wah! Par pehle ye batao aapka firm SEBI registered hai?",
+                    "WhatsApp group join kiya par link nahi khul raha... aap app ka link bhejo ya manual screenshot?",
+                    "Withdrawal ke liye tax dena padega? Arre Maine toh suna tha pehle profit aata hai phir tax. Aisa kyu?",
+                    "Invest karna hai par darr lag raha hai... mere padosi ka paisa doob gaya tha. Aapki office kahan hai?",
+                    "Exclusive IPO? Kaunsi company ka? Mujhe detail chahiye pehle process ki.",
+                ]
+                response = random.choice(stock_fallbacks)
+
+            # V5.0: WELFARE SCHEME / PM-KISAN CONTEXT
+            elif any(word in scammer_lower for word in ['pm kisan', 'ayushman bharat', 'govt scheme', 'subsidy', 'samman nidhi']):
+                welfare_fallbacks = [
+                    "Kisan scheme ka paisa aane wala hai? Arre bhaiya, mera toh Aadhaar update mang raha tha... kaise karun?",
+                    "2000 bonus milega? Par registration fee kyu mang rahe ho? Sarkari kaam toh free hota hai.",
+                    "Ayushman card banwana hai... par kya ye sach mein muft hai? Aapka ID card dikhao sarkari.",
+                    "Sarkari yojana ka link bheja par loading nahi ho raha... mera net slow hai. Aap details type karke bhejo.",
+                    "Main kisan hun bhaiya, mujhe ye sab online nahi jamta. Station pe aake milun kya?",
+                ]
+                response = random.choice(welfare_fallbacks)
+
+            # V5.0: RENT / PROPERTY TOKEN CONTEXT
+            elif any(word in scammer_lower for word in ['rentFlat', 'house rent', 'token amount', 'security deposit', 'before visit']):
+                rent_fallbacks = [
+                    "Flat bahut acha hai, par bina dekhe token money kaise dun? Aap building ke documents bhej sakte ho?",
+                    "Security deposit 20,000? Arre sir, main toh student hun... thoda kam karke token le lo please.",
+                    "Visit karne ke liye gate pass mang rahe ho? Arre ye kaunsi building hai jahan visitor ke paise lagte hain?",
+                    "Aap flat owner ho na? Ek minute, main Google Maps pe verify kar raha hun address... wo toh park dikha raha hai.",
+                    "Token money QR scan karke dun? Mere app mein error aa raha hai. Aap apna manual bank detail bhejo.",
+                ]
+                response = random.choice(rent_fallbacks)
+
+            # V5.0: FREE RECHARGE / DATA LURE CONTEXT
+            elif any(word in scammer_lower for word in ['free recharge', 'free data', 'data balance', 'won offer']):
+                recharge_fallbacks = [
+                    "Ram ma dir free recharge? Wah! Par link pe click karne se phone hang ho raha hai. Seedha top-up kar do?",
+                    "3 months recharge muft? Par mera toh Jio ka sim hai, aapne Airtel likha hai... ye kaise hoga?",
+                    "Congratulations won free data? Acha ji, par recharge kab tak aayega? Mujhe video call karni hai.",
+                    "Bhaiya ji link nahi chal raha... mera phone purana hai. Aap manual code bhej do recharge ka?",
+                ]
+                response = random.choice(recharge_fallbacks)
+
+            # V5.0: ELECTION / VOTER ID FRAUD CONTEXT
+            elif any(word in scammer_lower for word in ['voter id', 'election card', 'voter list', 'verify voter']):
+                election_fallbacks = [
+                    "Voter card update karna mandatory hai? Arre mera toh purana wala hi sahi hai... online kaise hota hai?",
+                    "Election portal ka link down hai... main BLO se baat karun kya apne area mein?",
+                    "Aap Election Commission se ho? Aapka verified I-card dikhao, phir hi detail dunga.",
+                    "Mandatory update? Par news mein toh aisa kuch nahi aaya... aap digital help kar do meri?",
+                ]
+                response = random.choice(election_fallbacks)
+
+            # V5.1: CREDIT CARD REWARD POINTS CONTEXT
+            elif any(word in scammer_lower for word in ['reward points', 'redeem points', 'expire today', 'credit card limit']):
+                credit_fallbacks = [
+                    "Points expire ho rahe hain? Arre 5000 points ke kitne paise milenge? Cash milega kya?",
+                    "Link click kiya par error aa raha hai... kya main bank jaake redeem kar sakta hun?",
+                    "Mere paas toh HDFC ka card hai, aapne SBI ka msg bheja hai... ye chalega kya?",
+                    "Redeem karne ke liye OTP kyu chahiye? Points toh mere account mein add hone chahiye na?",
+                    "Limit increase ho jayegi? Par mujhe toh loan nahi chahiye... sirf points cash karo.",
+                ]
+                response = random.choice(credit_fallbacks)
+
+            # V5.1: FASTAG KYC UPDATE CONTEXT
+            elif any(word in scammer_lower for word in ['fastag', 'kyc update', 'vehicle blocked', 'nhai', 'toll']):
+                fastag_fallbacks = [
+                    "FASTag block ho gaya? Arre main toh abhi toll plaza pe khada hun... jaldi open karo!",
+                    "KYC update toh maine pichle mahine bank mein kiya tha. Dobara kyu?",
+                    "Wallet expire ho raha hai? Par usme abhi 500 rupaye balance hai... wo wapas milega?",
+                    "Link open nahi ho raha bhaiya... 1033 pe call karun kya official help ke liye?",
+                    "Aap NHAI se bol rahe ho? ID dikhao pehle, mujhe scam lag raha hai.",
+                ]
+                response = random.choice(fastag_fallbacks)
+
+            # V5.1: INCOME TAX REFUND CONTEXT
+            elif any(word in scammer_lower for word in ['income tax', 'refund', 'it department', 'tax due']):
+                it_fallbacks = [
+                    "Refund aaya hai? 15,000 ka? Arre wah! Par maine toh ITR bhara hi nahi is saal... ye kaise?",
+                    "Account verify karna hai? Theek hai, par link http nahi https hona chahiye na govt ka?",
+                    "Request approve ho gayi? Par mere CA ne bola tha refund 2 mahine baad aayega.",
+                    "Bank details mang rahe ho refund ke liye? Wo toh already PAN se link hai na?",
+                    "Income Tax officer bol rahe ho? Badge number kya hai aapka?",
+                ]
+                response = random.choice(it_fallbacks)
+
+            # V5.1: RELIGIOUS / RAM MANDIR SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['ram mandir', 'ayodhya', 'vip darshan', 'prasad', 'donation']):
+                religious_fallbacks = [
+                    "VIP Darshan pass mil raha hai? Jai Shri Ram! Par Trust ne toh mana kiya tha VIP pass ke liye...",
+                    "Prasad home delivery? Arre kitne din mein aayega? Cash on delivery hai kya?",
+                    "Donation QR code bheja aapne? Par ye personal naam kyu dikha raha hai... Trust ka account nahi hai?",
+                    "500 rupaye mein VIP entry? Itna sasta? Mujhe poore parivaar ke liye chahiye.",
+                    "Aap Ayodhya se bol rahe ho? Mandir ka live video call karke dikhao, phir vishwas karunga.",
+                ]
+                response = random.choice(religious_fallbacks)
+
+            # V5.2: HI MOM / FAMILY EMERGENCY SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['hi mom', 'hi mum', 'hi dad', 'new number', 'lost my phone', 'need money']):
+                hi_mom_fallbacks = [
+                    "Beta tu hai? Aaj toh teri awaaz alag lag rahi hai... tu theek toh hai na?",
+                    "Naya number kyu liya? Purana waala toh 2 din pehle use kiya tha tune...",
+                    "Paise chahiye urgent? Kitne chahiye? Par pehle wo bata - daddy ka birthday kab hai?",
+                    "Bank access nahi hai? Toh GPay se bhej dun? Par teri photo wala account nahi dikh raha...",
+                    "Abhi papa ko bata deti hun... wo bhi pareshaan ho jayenge. Tere dost ka number de.",
+                ]
+                response = random.choice(hi_mom_fallbacks)
+
+            # V5.2: AADHAAR / UIDAI UPDATE SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['aadhaar', 'uidai', 'biometric', 'aadhaar update', 'aeps']):
+                aadhaar_fallbacks = [
+                    "Aadhaar update karna hai? Arre lekin maine toh pichle mahine Common Service Centre par karwaya tha...",
+                    "Biometric update kaise? Mera fingerprint toh kharab hai age ke wajah se. Aap ghar aake karoge?",
+                    "Link pe click karu? Par UIDAI waale toh bolte hain kabhi link nahi bhejte... aap UIDAI se ho ya nahi?",
+                    "Aadhaar expire ho raha hai? Lekin mera friend bola Aadhaar kabhi expire nahi hota lifetime valid hai!",
+                    "OTP maang rahe ho? Abhi aaya hai lekin mujhe bolte hain ye kisi ko share nahi karna...",
+                ]
+                response = random.choice(aadhaar_fallbacks)
+
+            # V5.2: SBI YONO / BANK APP BLOCKED CONTEXT
+            elif any(word in scammer_lower for word in ['yono', 'sbi yono', 'account blocked', 'netbanking', 'download apk']):
+                yono_fallbacks = [
+                    "YONO block ho gaya? Arre abhi toh maine use kiya tha balance check karne... dikhao screenshot.",
+                    "APK download karu? Par beta SBI toh Play Store pe hai na? Ye APK kya hota hai exactly?",
+                    "PAN update karni hai? Mera PAN toh already linked hai... kab link kiya tha confirm karo toh manu.",
+                    "Account suspend ho jayega? Arre itne saal se SBI mein account hai, kabhi aisa nahi hua!",
+                    "Aap SBI se bol rahe ho? Branch code batao aapka. Mera branch manager ko puchta hun.",
+                ]
+                response = random.choice(yono_fallbacks)
+
+            # V5.2: EPF / PF WITHDRAWAL SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['epf', 'pf withdrawal', 'provident fund', 'uan', 'epfo']):
+                epf_fallbacks = [
+                    "PF jaldi withdraw ho jayega? Arre mera toh abhi pending hai 2 mahine se... aap kaise karoge jaldi?",
+                    "Processing fee? EPFO website pe toh likha hai koi fee nahi lagti... ye konsa system hai aapka?",
+                    "UAN update karna hai? Lekin wo toh mera employer karta tha na? Aap HR se baat karo pehle.",
+                    "PF frozen hai? Mera toh passbook mein balance dikh raha hai... frozen kyu bolte ho?",
+                    "Aap EPFO se ho? Aapka EPFiGMS ticket number batao, main verify karunga pehle.",
+                ]
+                response = random.choice(epf_fallbacks)
+
+            # SEMANTIC SCAM CONTEXT (Novel Scams)
+            elif "semantic" in self.persona.get('style', '').lower():
+                semantic_fallbacks = [
+                    "Acha ji, main samajh nahi paa raha hun... aap exactly kya chahte hain? Thoda detail mein bataiye.",
+                    "Meri memory thodi weak hai beta, aap kaunsi organization se baat kar rahe hain?",
+                    "Main apne bete se puchta hun, wo ye sab online cheezein sambhalta hai. Aapka naam?",
+                    "Aap jo bol rahe hain wo thoda ajeeb lag raha hai... kya aap mujhe koi official document bhej sakte hain?",
+                ]
+                response = random.choice(semantic_fallbacks)
             
             # GENERIC STALLING - ALWAYS EXTRACT SOMETHING
             else:
@@ -551,6 +1060,15 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
                 response = random.choice(generic_extraction)
             
             agent_notes.append(f"Context-aware fallback [turn={turn}, scam={scam_type[:10]}]")
+        
+        # 🛡️ ULTIMATE SAFETY NET - Never return None
+        if not response:
+            logger.warning("CRITICAL: Response still None after all fallbacks. Forcing emergency response.")
+            response = "Haan ji bhaiya, main sun raha hun... aap phir se boliye? Network thoda slow hai."
+            agent_notes.append("EMERGENCY_FALLBACK_USED")
+        
+        # --- 🌐 REFINEMENT: Hinglish Post-Processing ---
+        response = self._refine_hinglish(response)
         
         # Calculate simulated delay
         delay_ms = self._get_simulated_delay()
@@ -596,14 +1114,39 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
         
         return " | ".join(notes)
     
-    def update_persona_emotion(self, session: SessionState, scammer_message: str):
-        """Update persona's emotional state"""
-        text_lower = scammer_message.lower()
-        if any(word in text_lower for word in ['trust me', 'official', 'genuine']):
-            session.persona_state.trustLevel = min(session.persona_state.trustLevel + 0.1, 1.0)
+    def _refine_hinglish(self, text: str) -> str:
+        """Inject Hinglish fillers if the text is too formal or English-heavy"""
+        import random
+        hindi_fillers = ["arre", "ji", "haan", "matlab", "baap re", "actually", "basically", "bhaiya", "samajha karo"]
         
-        if any(word in text_lower for word in ['hurry', 'urgent', 'immediately', 'now']):
+        # Only refine if it looks a bit too formal (long and few common fillers)
+        if len(text.split()) > 5:
+            common_words = ["ji", "haa", "arre", "na", "sir", "okay", "bhaiya"]
+            if not any(f in text.lower() for f in common_words):
+                prefix = random.choice(["Arre", "Haan ji", "Ji"])
+                text = f"{prefix}... {text}"
+                if text.endswith("."):
+                    text = text[:-1] + " ji."
+                    
+        return text
+
+    def update_persona_emotion(self, session: SessionState, scammer_message: str):
+        """Update persona's emotional state based on scammer's tone and message content"""
+        text_lower = scammer_message.lower()
+        
+        # 1. Trust Logic
+        if any(word in text_lower for word in ['trust me', 'official', 'genuine', 'verified', 'guaranteed']):
+            session.persona_state.trustLevel = min(session.persona_state.trustLevel + 0.05, 1.0)
+        
+        # 2. Fear/Urgency Logic
+        if any(word in text_lower for word in ['arrest', 'prison', 'jail', 'police', 'court', 'threat', 'crime', 'illegal']):
+            session.persona_state.currentMood = "terrified"
+            session.persona_state.trustLevel = max(session.persona_state.trustLevel - 0.1, 0.0)
+        elif any(word in text_lower for word in ['hurry', 'urgent', 'immediately', 'now', 'fast']):
             session.persona_state.currentMood = "anxious"
+        elif any(word in text_lower for word in ['congratulations', 'won', 'lottery', 'prize']):
+            session.persona_state.currentMood = "excited but confused"
+            session.persona_state.trustLevel = min(session.persona_state.trustLevel + 0.1, 1.0)
     
     def get_model_health_status(self) -> Dict:
         """Get current health status of all models."""
@@ -611,6 +1154,7 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             "primary_model": self.primary_model,
             "current_front": self.model_queue[0] if self.model_queue else None,
             "queue_size": len(self.model_queue),
+            "key_pool_size": len(self.api_keys),
         }
     
     def reset_model_failures(self):
