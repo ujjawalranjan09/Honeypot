@@ -417,6 +417,9 @@ class IntelligenceExtractor:
             'social_handles': set(),
             'geographic_indicators': set(),
             'reference_numbers': set(),
+            'crypto_wallets': set(),
+            'vehicle_numbers': set(),
+            'employee_ids': set(),
         }
         
         all_confidence = {}

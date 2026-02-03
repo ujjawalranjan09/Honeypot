@@ -1,280 +1,86 @@
-============================================================
-HONEY-POT API TEST SUITE
-============================================================
+============================= test session starts =============================
+platform win32 -- Python 3.12.3, pytest-7.4.3, pluggy-1.0.0 -- C:\Users\dell\anaconda3\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Python\honeypot-project
+configfile: pytest.ini
+plugins: anyio-3.7.1, dash-3.2.0, asyncio-0.23.2, cov-4.1.0
+asyncio: mode=Mode.STRICT
+collecting ... {"timestamp": "2026-02-03T16:44:57.554825Z", "level": "INFO", "logger": "honeypot.scam_detector", "message": "Loaded pre-trained scam detection model", "module": "scam_detector", "function": "_load_model", "line": 410, "thread": 16188, "threadName": "MainThread"}
+{"timestamp": "2026-02-03T16:44:58.401569Z", "level": "INFO", "logger": "honeypot.ai_agent", "message": "Multi-Model Agent configured. Queue size: 30, Key pool size: 2", "module": "ai_agent", "function": "__init__", "line": 103, "thread": 16188, "threadName": "MainThread"}
+{"timestamp": "2026-02-03T16:44:58.402570Z", "level": "INFO", "logger": "honeypot.ai_agent", "message": "Primary Model: google/gemma-3-27b-it:free", "module": "ai_agent", "function": "__init__", "line": 104, "thread": 16188, "threadName": "MainThread"}
+{"timestamp": "2026-02-03T16:44:58.415277Z", "level": "INFO", "logger": "honeypot.main", "message": "Frontend mounted successfully", "module": "main", "function": "<module>", "line": 643, "thread": 16188, "threadName": "MainThread"}
+collected 65 items
 
---- Test 1: Health Check ---
-Health Check:
-{
-  "status": "healthy",
-  "timestamp": "2026-01-30T00:25:01.818858",
-  "model_trained": true,
-  "gemini_configured": true,
-  "active_sessions": 2,
-  "version": "2.0.0"
-}
+tests/test_detector.py::TestScamDetector::test_rule_based_scoring_urgency PASSED [  1%]
+tests/test_detector.py::TestScamDetector::test_rule_based_scoring_threat PASSED [  3%]
+tests/test_detector.py::TestScamDetector::test_rule_based_scoring_prize PASSED [  4%]
+tests/test_detector.py::TestScamDetector::test_rule_based_scoring_clean PASSED [  6%]
+tests/test_detector.py::TestScamDetector::test_sentiment_analysis_urgency PASSED [  7%]
+tests/test_detector.py::TestScamDetector::test_sentiment_analysis_fear PASSED [  9%]
+tests/test_detector.py::TestScamDetector::test_context_analysis_escalation PASSED [ 10%]
+tests/test_detector.py::TestScamDetector::test_scam_type_detection_banking PASSED [ 12%]
+tests/test_detector.py::TestScamDetector::test_scam_type_detection_lottery PASSED [ 13%]
+tests/test_detector.py::TestScamDetector::test_scam_type_detection_loan PASSED [ 15%]
+tests/test_detector.py::TestScamDetector::test_threat_level_assessment_high PASSED [ 16%]
+tests/test_detector.py::TestScamDetector::test_threat_level_assessment_low PASSED [ 18%]
+tests/test_detector.py::TestScamDetector::test_full_detection_scam PASSED [ 20%]
+tests/test_detector.py::TestScamDetector::test_full_detection_clean PASSED [ 21%]
+tests/test_detector.py::TestScamDetector::test_hindi_keyword_detection PASSED [ 23%]
+tests/test_detector.py::TestScamDetector::test_suspicious_link_detection PASSED [ 24%]
+tests/test_detector.py::TestScamDetector::test_phone_number_detection PASSED [ 26%]
+tests/test_detector.py::TestScamDetector::test_adaptive_threshold_banking PASSED [ 27%]
+tests/test_detector.py::TestGlobalDetector::test_detector_initialized PASSED [ 29%]
+tests/test_detector.py::TestGlobalDetector::test_detector_has_model_attr PASSED [ 30%]
+tests/test_detector.py::TestKillSwitch::test_phishing_link_with_urgency_triggers_kill_switch PASSED [ 32%]
+tests/test_detector.py::TestKillSwitch::test_financial_with_threat_triggers_kill_switch PASSED [ 33%]
+tests/test_detector.py::TestKillSwitch::test_suspicious_link_alone_is_high_risk PASSED [ 35%]
+tests/test_detector.py::TestSafeWordFiltering::test_legitimate_otp_message_reduced_score PASSED [ 36%]
+tests/test_detector.py::TestSafeWordFiltering::test_payment_receipt_reduced_score PASSED [ 38%]
+tests/test_detector.py::TestContextAwareML::test_multi_stage_scam_detected_with_context PASSED [ 40%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_phone_number_extraction_indian PASSED [ 41%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_phone_number_extraction_with_context PASSED [ 43%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_upi_id_extraction PASSED [ 44%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_phishing_link_extraction PASSED [ 46%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_legitimate_link_filtering PASSED [ 47%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_bank_account_extraction PASSED [ 49%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_email_extraction PASSED [ 50%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_person_name_extraction PASSED [ 52%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_organization_extraction PASSED [ 53%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_payment_platform_extraction PASSED [ 55%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_geographic_extraction PASSED [ 56%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_reference_number_extraction PASSED [ 58%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_suspicious_keyword_extraction PASSED [ 60%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_conversation_extraction PASSED [ 61%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_intelligence_merge PASSED [ 63%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_quality_score_calculation PASSED [ 64%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_confidence_scoring PASSED [ 66%]
+tests/test_extractor.py::TestIntelligenceExtractor::test_hindi_keyword_extraction PASSED [ 67%]
+tests/test_extractor.py::TestGlobalExtractor::test_extractor_initialized PASSED [ 69%]
+tests/test_extractor.py::TestGlobalExtractor::test_extractor_has_patterns PASSED [ 70%]
+tests/test_api.py::TestHealthEndpoint::test_health_check_no_auth PASSED  [ 72%]
+tests/test_api.py::TestHealthEndpoint::test_health_check_returns_version PASSED [ 73%]
+tests/test_api.py::TestMessageEndpoint::test_message_requires_auth PASSED [ 75%]
+tests/test_api.py::TestMessageEndpoint::test_message_invalid_api_key PASSED [ 76%]
+tests/test_api.py::TestMessageEndpoint::test_scam_detection PASSED       [ 78%]
+tests/test_api.py::TestMessageEndpoint::test_clean_message_handling PASSED [ 80%]
+tests/test_api.py::TestMessageEndpoint::test_intelligence_extraction PASSED [ 81%]
+tests/test_api.py::TestMessageEndpoint::test_engagement_metrics_returned PASSED [ 83%]
+tests/test_api.py::TestMessageEndpoint::test_scam_classification_returned PASSED [ 84%]
+tests/test_api.py::TestMessageEndpoint::test_multi_turn_conversation PASSED [ 86%]
+tests/test_api.py::TestSessionEndpoint::test_session_status_requires_auth PASSED [ 87%]
+tests/test_api.py::TestSessionEndpoint::test_session_not_found PASSED    [ 89%]
+tests/test_api.py::TestSessionEndpoint::test_session_status_after_message PASSED [ 90%]
+tests/test_api.py::TestStatsEndpoint::test_stats_requires_auth PASSED    [ 92%]
+tests/test_api.py::TestStatsEndpoint::test_stats_returns_data PASSED     [ 93%]
+tests/test_api.py::TestPersonasEndpoint::test_personas_list PASSED       [ 95%]
+tests/test_api.py::TestTrainEndpoint::test_train_requires_auth PASSED    [ 96%]
+tests/test_api.py::TestOpenAPISchema::test_openapi_schema_available PASSED [ 98%]
+tests/test_api.py::TestOpenAPISchema::test_docs_available PASSED         [100%]
 
---- Test 2: Scam Message Detection ---
+============================== warnings summary ===============================
+C:\Users\dell\anaconda3\Lib\site-packages\pytz\tzinfo.py:27
+  C:\Users\dell\anaconda3\Lib\site-packages\pytz\tzinfo.py:27: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    _epoch = datetime.utcfromtimestamp(0)
 
-First Scam Message Response:
-{
-  "status": "success",
-  "scamDetected": true,
-  "agentResponse": null,
-  "engagementMetrics": {
-    "engagementDurationSeconds": 90,
-    "totalMessagesExchanged": 9,
-    "currentPhase": "complete",
-    "phaseProgress": null
-  },
-  "extractedIntelligence": {
-    "bankAccounts": [],
-    "upiIds": [],
-    "phishingLinks": [
-      "www.bank-secure.com"
-    ],
-    "phoneNumbers": [
-      "9876543210",
-      "+91-9876543210"
-    ],
-    "suspiciousKeywords": [
-      "immediate",
-      "account",
-      "today",
-      "verify",
-      "block",
-      "share",
-      "bank",
-      "upi",
-      "locked"
-    ],
-    "emailAddresses": [],
-    "personNames": [],
-    "organizationNames": [],
-    "paymentPlatforms": [],
-    "socialMediaHandles": [],
-    "geographicIndicators": [],
-    "referenceNumbers": [],
-    "confidenceScores": null
-  },
-  "agentNotes": "Scam: UPI_Banking_Fraud | 9 msgs in 90s | Intel: 2 phone(s), 1 link(s) | Persona: curious_elder",
-  "engagementComplete": true,
-  "scamClassification": {
-    "scamType": "UPI_Banking_Fraud",
-    "confidence": 1.0,
-    "alternativeTypes": [
-      {
-        "Phishing": 0.6
-      },
-      {
-        "Link_Phishing": 0.5
-      }
-    ],
-    "tacticsIdentified": [
-      "fear_tactic"
-    ]
-  },
-  "threatAssessment": {
-    "level": "high",
-    "sophisticationScore": 1.0,
-    "indicators": [
-      "suspicious_link",
-      "immediate",
-      "account",
-      "today",
-      "block"
-    ],
-    "recommendation": null
-  },
-  "detectedLanguage": "English",
-  "responseDelay": null
-}
-
---- Test 3: Follow-up Message ---
-
-Follow-up Message Response:
-{
-  "status": "success",
-  "scamDetected": true,
-  "agentResponse": null,
-  "engagementMetrics": {
-    "engagementDurationSeconds": 90,
-    "totalMessagesExchanged": 10,
-    "currentPhase": "complete",
-    "phaseProgress": null
-  },
-  "extractedIntelligence": {
-    "bankAccounts": [],
-    "upiIds": [],
-    "phishingLinks": [
-      "www.bank-secure.com"
-    ],
-    "phoneNumbers": [
-      "9876543210",
-      "+91-9876543210"
-    ],
-    "suspiciousKeywords": [
-      "immediate",
-      "account",
-      "block",
-      "verify",
-      "today",
-      "share",
-      "bank",
-      "upi",
-      "locked"
-    ],
-    "emailAddresses": [],
-    "personNames": [],
-    "organizationNames": [],
-    "paymentPlatforms": [],
-    "socialMediaHandles": [],
-    "geographicIndicators": [],
-    "referenceNumbers": [],
-    "confidenceScores": null
-  },
-  "agentNotes": "Scam: UPI_Banking_Fraud | 10 msgs in 90s | Intel: 2 phone(s), 1 link(s) | Persona: curious_elder",
-  "engagementComplete": true,
-  "scamClassification": {
-    "scamType": "UPI_Banking_Fraud",
-    "confidence": 0.9224998038092341,
-    "alternativeTypes": [],
-    "tacticsIdentified": [
-      "repeated_info_requests"
-    ]
-  },
-  "threatAssessment": {
-    "level": "medium",
-    "sophisticationScore": 1.0,
-    "indicators": [
-      "account",
-      "share",
-      "phone_number",
-      "repeated_info_requests",
-      "upi"
-    ],
-    "recommendation": null
-  },
-  "detectedLanguage": "English",
-  "responseDelay": null
-}
-
---- Test 4: Legitimate Message ---
-
-Legitimate Message Response:
-{
-  "status": "success",
-  "scamDetected": true,
-  "agentResponse": "Sir ji, aap",
-  "engagementMetrics": {
-    "engagementDurationSeconds": 81,
-    "totalMessagesExchanged": 7,
-    "currentPhase": "compliance",
-    "phaseProgress": 0.8
-  },
-  "extractedIntelligence": {
-    "bankAccounts": [],
-    "upiIds": [],
-    "phishingLinks": [],
-    "phoneNumbers": [],
-    "suspiciousKeywords": [
-      "free",
-      "now"
-    ],
-    "emailAddresses": [],
-    "personNames": [],
-    "organizationNames": [],
-    "paymentPlatforms": [],
-    "socialMediaHandles": [],
-    "geographicIndicators": [],
-    "referenceNumbers": [],
-    "confidenceScores": null
-  },
-  "agentNotes": "Scam: General_Scam | 8 msgs in 84s | Persona: desperate_borrower",
-  "engagementComplete": false,
-  "scamClassification": {
-    "scamType": "General_Scam",
-    "confidence": 0.8596229119737145,
-    "alternativeTypes": [],
-    "tacticsIdentified": []
-  },
-  "threatAssessment": {
-    "level": "low",
-    "sophisticationScore": 1.0,
-    "indicators": [
-      "free",
-      "now"
-    ],
-    "recommendation": null
-  },
-  "detectedLanguage": "English",
-  "responseDelay": 1022
-}
-
---- Test 5: Session Status ---
-
-Session Status (test-session-001):
-{
-  "sessionId": "test-session-001",
-  "scamDetected": true,
-  "scamType": "UPI_Banking_Fraud",
-  "scamConfidence": 1.0,
-  "threatLevel": "medium",
-  "persona": "curious_elder",
-  "engagementPhase": "complete",
-  "messagesExchanged": 10,
-  "engagementComplete": true,
-  "intelligenceQualityScore": 0.4,
-  "extractedIntelligence": {
-    "bankAccounts": [],
-    "upiIds": [],
-    "phishingLinks": [
-      "www.bank-secure.com"
-    ],
-    "phoneNumbers": [
-      "9876543210",
-      "+91-9876543210"
-    ],
-    "suspiciousKeywords": [
-      "immediate",
-      "account",
-      "block",
-      "verify",
-      "today",
-      "share",
-      "bank",
-      "upi",
-      "locked"
-    ],
-    "emailAddresses": [],
-    "personNames": [],
-    "organizationNames": [],
-    "paymentPlatforms": [],
-    "socialMediaHandles": [],
-    "geographicIndicators": [],
-    "referenceNumbers": [],
-    "confidenceScores": null
-  },
-  "analytics": {
-    "scammerEngagementLevel": 1.0,
-    "detectionRisk": 0.0,
-    "newInfoEmerging": true
-  },
-  "startTime": "2026-01-30T00:23:31.693912",
-  "lastActivity": "2026-01-30T00:25:02.412680",
-  "callbackSent": true
-}
-
---- Test 6: Complete Engagement ---
-
-Complete Engagement (test-session-001):
-{
-  "status": "completed",
-  "sessionId": "test-session-001",
-  "callbackTriggered": true,
-  "callbackSuccess": true,
-  "summary": "Scam: UPI_Banking_Fraud | 10 msgs in 90s | Intel: 2 phone(s), 1 link(s) | Persona: curious_elder"
-}
-
-============================================================
-ALL TESTS COMPLETED
-============================================================
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================== 65 passed, 1 warning in 96.06s (0:01:36) ===================

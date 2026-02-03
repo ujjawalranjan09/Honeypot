@@ -44,6 +44,7 @@ SCAM_TYPE_THRESHOLDS: Dict[str, float] = {
     "Digital_Arrest_Scam": 0.35,    # Extremely dangerous - catch very early
     "Utility_Bill_Scam": 0.40,      # High urgency threats
     "General_Scam": 0.48,           # Default threshold
+    "Novel_Scam": 0.42,             # Broad, unseen social-engineering patterns
 }
 
 # ============== Scoring Weights ==============
@@ -52,6 +53,7 @@ SCORING_WEIGHTS = {
     "rule_based": 0.40,             # Weight for rule-based detection
     "context_bonus": 0.15,          # Bonus for contextual patterns
     "sentiment_weight": 0.10,       # Weight for sentiment analysis
+    "social_engineering": 0.15,     # Generic SE cues for novel scam patterns
 }
 
 # Keyword category weights for rule-based scoring
@@ -104,6 +106,10 @@ RESPONSE_LIMITS = {
     "delay_simulation_ms": (1000, 3000),    # 1-3 seconds for faster testing (was 30-60s)
 }
 
+# Allow tests/dev to disable simulated delays
+if os.getenv("DISABLE_RESPONSE_DELAY", "false").lower() == "true":
+    RESPONSE_LIMITS["delay_simulation_ms"] = (0, 0)
+
 # ============== Model Configuration ==============
 MODEL_PATH = "models/scam_detector.joblib"
 VECTORIZER_PATH = "models/tfidf_vectorizer.joblib"
@@ -148,6 +154,11 @@ LOGGING_CONFIG = {
     "include_response_body": True,
     "max_body_length": 1000,        # Truncate long bodies
 }
+
+# ============== Novel Scam Feedback Hooks ==============
+NOVEL_SAMPLE_LOG_ENABLED = os.getenv("NOVEL_SAMPLE_LOG_ENABLED", "false").lower() == "true"
+NOVEL_SAMPLE_LOG_PATH = os.getenv("NOVEL_SAMPLE_LOG_PATH", "novel_scam_samples.jsonl")
+NOVEL_SAMPLE_MAX_LEN = int(os.getenv("NOVEL_SAMPLE_MAX_LEN", "500"))
 
 # ============== Rate Limiting ==============
 RATE_LIMIT_CONFIG = {

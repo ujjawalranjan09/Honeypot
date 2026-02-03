@@ -86,10 +86,12 @@ class SessionManager:
     def _update_analytics(
         self,
         session: SessionState,
-        message: Message
+        message: Message,
+        keywords: List[str] = None
     ) -> None:
         """Update conversation analytics"""
         analytics = session.analytics
+        keywords = keywords or []
         
         # Track message timing
         if session.conversation_history:
@@ -119,23 +121,38 @@ class SessionManager:
         urgency_score = sum(1 for kw in urgency_keywords if kw in message.text.lower()) / len(urgency_keywords)
         analytics.urgencyProgression.append(urgency_score)
         
+        # Track intent diversity (tactics used)
+        novel_tactics = [kw for kw in keywords if kw.startswith("social_")]
+        for tactic in novel_tactics:
+            if tactic not in analytics.tactics_seen:
+                analytics.tactics_seen.append(tactic)
+
+        
         # Check if new info is still emerging
         if len(analytics.messageLengths) > 5:
             recent_lengths = analytics.messageLengths[-5:]
             if all(l < 30 for l in recent_lengths):
                 analytics.newInfoEmergence = False
         
+        # --- Strategy Pivot Detection (V35) ---
+        if len(analytics.tactics_seen) >= 2:
+            # If scammer has used multiple distinct novel tactics, they are pivoting
+            analytics.scammerEngagementLevel = min(1.0, analytics.scammerEngagementLevel + 0.05)
+        
         # --- Scammer Sentiment Analysis (V34) ---
         msg_text = message.text.lower()
-        frustration_keywords = ["hurry", "last chance", "hello?", "are you there", "waiting", "fast", "immediately"]
-        threat_keywords = ["arrest", "seize", "police", "legal action", "jail", "court", "warrant"]
+        frustration_keywords = ["hurry", "last chance", "hello?", "are you there", "waiting", "fast", "immediately", "reply"]
+        threat_keywords = ["arrest", "seize", "police", "legal action", "jail", "court", "warrant", "illegal"]
         
         if any(kw in msg_text for kw in threat_keywords):
             analytics.scammer_sentiment = "threatening"
         elif any(kw in msg_text for kw in frustration_keywords):
             analytics.scammer_sentiment = "frustrated"
+        elif len(msg_text) < 10 and session.messages_exchanged > 3:
+            analytics.scammer_sentiment = "bored"
         else:
             analytics.scammer_sentiment = "neutral"
+
         
         # Update scammer engagement level based on response patterns
         if len(analytics.messageTimings) >= 3:
@@ -194,16 +211,27 @@ class SessionManager:
         
         # High quality + sufficient messages = can complete
         if quality_score >= 0.7 and session.messages_exchanged >= MIN_ENGAGEMENT_MESSAGES:
-            return True, "high_quality_intel"
+            # For novel scams, we want more behavioral data
+            if session.scam_type == "Novel_Scam" and len(session.analytics.tactics_seen) < 3 and session.messages_exchanged < 15:
+                pass # Keep going to see more tactics
+            else:
+                return True, "high_quality_intel"
         
         # Very high quality (rare) - complete early
         if quality_score >= 0.85 and session.messages_exchanged >= 8:
             return True, "excellent_quality_intel"
         
-        # Check if scammer is disengaging
-        if session.analytics.scammerEngagementLevel < 0.3:
+        # Check if scammer is disengaging or bored
+        if session.analytics.scammerEngagementLevel < 0.3 or session.analytics.scammer_sentiment == "bored":
             if session.messages_exchanged >= MIN_ENGAGEMENT_MESSAGES:
-                return True, "scammer_disengaging"
+                return True, "scammer_disengaging_or_bored"
+        
+        # No new tactics for 5+ messages in a novel scam
+        if session.scam_type == "Novel_Scam" and session.messages_exchanged > 12:
+            recent_msgs = session.conversation_history[-5:]
+            # If no new 'social_' keywords in recent turns
+            if len(session.analytics.tactics_seen) >= 2 and not session.analytics.newInfoEmergence:
+                return True, "novel_tactics_plateau"
         
         # No new info emerging
         if not session.analytics.newInfoEmergence and session.messages_exchanged >= 10:
@@ -214,6 +242,7 @@ class SessionManager:
             return True, "detection_risk_high"
         
         return False, ""
+
     
     async def update_session(
         self,
@@ -252,7 +281,8 @@ class SessionManager:
                     session.persona = agent.select_persona(scam_type, first_message=message.text)
             
             # Update analytics
-            self._update_analytics(session, message)
+            self._update_analytics(session, message, keywords)
+
             
             # Update persona emotional state
             agent.update_persona_emotion(session, message.text)

@@ -1,19 +1,21 @@
 # Agentic Honey-Pot API for Scam Detection & Intelligence Extraction
 
-**Version 5.2 "Bharat Shield Ultimate"** - An AI-powered honeypot system that detects scam intent using **32 specialized Kill Switches** and autonomously engages scammers to extract useful intelligence without revealing detection.
+**Version 5.3 "Neural Sentinel"** - An AI-powered honeypot system that detects scam intent using **32 specialized Kill Switches** and **Tactical Diversity Tracking** to autonomously engage scammers and extract useful intelligence.
 
 ## 🚀 Features
 
 - **Hybrid Scam Detection**: ML + Rule-based + 32 Kill Switches for English, Hindi, and Hinglish
-- **Indian Environment Hardening**: Hi Mom, Aadhaar, SBI YONO, EPF, FASTag, and 27 more scam types
-- **32 Scam Categories**: Comprehensive coverage of the Indian cybercrime landscape
+- **Novel Scam Synergies**: Detects complex manipulation tactics (Authority Trap, Double Bait, Isolation Pressure)
+- **Strategy Pivot Detection**: Automatically identifies when a scammer shifts tactics or narrative mid-session
+- **Tactical Diversity Tracking**: Monitors unique social engineering markers to assess scammer sophistication
+- **Indian Environment Hardening**: Hi Mom, Aadhaar, SBI YONO, EPF, FASTag, and 28 more scam types
+- **33 Scam Categories**: Comprehensive coverage of the Indian cybercrime landscape including Novel Scams
 - **Universal Semantic Filter**: LLM intent analysis handles novel "grooming" scams missed by keyword filters
 - **Global Scammer Profiling**: Persistent cross-session tracking of repeat offenders (UPI, Phone, Crypto)
-- **Enhanced Intelligence Extraction**: Vehicle Numbers, Employee IDs, Bank Details, and Crypto Wallets
-- **Multi-Model Fallback**: Ultra-robust queue using 30+ Free-tier models and 10+ rotating API keys
-- **116+ Contextual Fallbacks**: Specialized Hinglish responses for each scam category
+- **"Fail-Fast" Multi-Model Fallback**: Ultra-robust queue with rotating API keys and fast fallback to 116+ contextual responses
+- **Intelligent Plateau Completion**: Automatically disengages when learning value peaks or scammer disengages
 - **Visual Intelligence Reports**: Premium cyberpunk-themed HTML dashboard
-- **2024-2025 Threat Intelligence**: Updated with latest Indian cybercrime research and web-crawled trends
+- **2024-2025 Threat Intelligence**: Updated with the latest Indian cybercrime research and web-crawled trends
 
 ## 📦 Installation
 

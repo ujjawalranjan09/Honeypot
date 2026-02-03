@@ -224,13 +224,63 @@ class HoneypotAgent:
             logger.warning(f"API Key failure detected. Rotated to next key ending in ...{new_key[-6:]}")
         else:
             logger.error("API Key failure detected, but no more keys available in pool.")
+
+    def _infer_persona_from_message(self, first_message: str) -> Optional[str]:
+        """Infer persona from the scammer's first message (novel-scam friendly)."""
+        if not first_message:
+            return None
+
+        msg = first_message.lower()
+
+        # Authority / arrest / legal threats
+        if any(k in msg for k in ["police", "cbi", "ncb", "arrest", "court", "warrant", "customs", "legal"]):
+            return random.choice(["religious_lady", "naive_victim", "small_trader"])
+
+        # Banking / KYC / OTP
+        if any(k in msg for k in ["bank", "upi", "otp", "kyc", "account", "netbanking", "yono", "pan", "aadhaar"]):
+            return random.choice(["naive_victim", "curious_elder", "tech_skeptic", "eager_helper"])
+
+        # Loans
+        if any(k in msg for k in ["loan", "emi", "credit", "pre-approved"]):
+            return "desperate_borrower"
+
+        # Jobs / tasks / work-from-home
+        if any(k in msg for k in ["job", "part time", "task", "work from home", "earn", "salary", "review"]):
+            return random.choice(["college_student", "busy_mom", "desperate_borrower"])
+
+        # Investments / crypto / stock
+        if any(k in msg for k in ["investment", "crypto", "bitcoin", "usdt", "trading", "ipo", "returns", "profit"]):
+            return random.choice(["small_trader", "college_student", "concerned_nri"])
+
+        # Prize / lottery / reward
+        if any(k in msg for k in ["prize", "lottery", "winner", "gift", "bonus", "reward"]):
+            return random.choice(["curious_elder", "busy_mom", "naive_victim"])
+
+        # Utility / bill / fastag
+        if any(k in msg for k in ["electricity", "bill", "fastag", "toll", "disconnection"]):
+            return "small_trader"
+
+        # Hi-mom / family emergency
+        if any(k in msg for k in ["hi mom", "hi dad", "new number", "lost my phone", "need money"]):
+            return "busy_mom"
+
+        # Rent / property / token
+        if any(k in msg for k in ["rent", "property", "token", "security deposit", "flat", "house"]):
+            return "busy_mom"
+
+        # Romance / matrimonial / honeytrap
+        if any(k in msg for k in ["love", "relationship", "matrimony", "shaadi", "video call", "intimate"]):
+            return random.choice(["curious_elder", "religious_lady"])
+
+        return None
     
     def select_persona(self, scam_type: str, first_message: Optional[str] = None) -> str:
         """
         Intelligently select persona based on:
         1. Explicit name mentions in the scammer's message
-        2. Scam type context
-        3. Random choice among all available personas
+        2. First-message intent cues (novel scam patterns)
+        3. Scam type context
+        4. Random choice among all available personas
         """
         # 1. Check for Name Mentions in the first message
         if first_message:
@@ -242,7 +292,14 @@ class HoneypotAgent:
                     logger.info(f"Adopted persona '{p_id}' due to name mention in message")
                     return p_id
 
-        # 2. Fallback to Scam Type logic
+        # 2. Infer from the scammer's first message intent cues
+        if first_message:
+            inferred = self._infer_persona_from_message(first_message)
+            if inferred:
+                logger.info(f"Adopted persona '{inferred}' based on first-message intent cues")
+                return inferred
+
+        # 3. Fallback to Scam Type logic
         scam_type = scam_type.upper()
         
         if "LOAN" in scam_type:
@@ -276,7 +333,7 @@ class HoneypotAgent:
             return "tech_skeptic"
             
         else:
-            # 3. Final fallback: Random pick from all available personas
+            # 4. Final fallback: Random pick from all available personas
             return random.choice(list(self.personas.keys()))
     
     def _get_engagement_phase(self, message_count: int) -> EngagementPhase:
@@ -291,6 +348,124 @@ class HoneypotAgent:
         """Get simulated typing delay in milliseconds"""
         min_delay, max_delay = RESPONSE_LIMITS["delay_simulation_ms"]
         return random.randint(min_delay, max_delay)
+
+    def _get_extraction_goal(self, session: SessionState) -> Optional[str]:
+        """Pick the next best piece of intel to request, phrased naturally."""
+        intel = session.extracted_intelligence
+
+        if not intel.upiIds:
+            return "Waise aapka UPI ID exact kya hai? Receiver name bhi batana."
+        if not intel.phoneNumbers:
+            return "Aapka WhatsApp/phone number likh lo? Verification ke liye."
+        if not intel.bankAccounts:
+            return "Bank account number aur IFSC kya hai? Main note kar raha hun."
+        if not intel.employeeIds:
+            return "Aapka employee/badge ID kya hai? Mera beta verify karega."
+        if not intel.personNames:
+            return "Aapka full name kya hai? Receipt mein naam bharna hai."
+        if not intel.organizationNames:
+            return "Aap kis department/company se ho? Main record me likhun."
+
+        return None
+
+    def _nudge_extraction(self, response: str, goal_prompt: Optional[str]) -> str:
+        """Append a gentle extraction prompt if response doesn't already ask."""
+        if not goal_prompt or not response:
+            return response
+
+        lower = response.lower()
+        if any(k in lower for k in ["upi", "account", "bank", "phone", "number", "id", "office", "branch"]):
+            return response
+
+        # Keep it short and conversational
+        return f"{response} {goal_prompt}"
+
+    def _inject_typos(self, text: str) -> str:
+        """Add human-like typos based on configured probability."""
+        prob = RESPONSE_LIMITS.get("typo_probability", 0.0)
+        if prob <= 0.0 or not text or len(text) < 10:
+            return text
+
+        if random.random() > prob:
+            return text
+
+        words = text.split()
+        if len(words) < 4:
+            return text
+
+        typo_count = 1 if random.random() < 0.75 else 2
+
+        for _ in range(typo_count):
+            idx = random.randrange(len(words))
+            word = words[idx]
+
+            # Skip words with digits/symbols to avoid corrupting IDs
+            if re.search(r"[\d@:/]", word):
+                continue
+
+            # Split punctuation
+            m = re.match(r"^([\"'\(\[\{]*)([A-Za-z]{3,})([\"'\)\]\}\.,!?;:]*)$", word)
+            if not m:
+                continue
+            prefix, core, suffix = m.group(1), m.group(2), m.group(3)
+
+            core = self._make_typo(core)
+            words[idx] = f"{prefix}{core}{suffix}"
+
+        # Occasionally drop ending punctuation
+        if random.random() < 0.2:
+            text = " ".join(words)
+            text = re.sub(r"[.!?]\s*$", "", text)
+            return text
+
+        return " ".join(words)
+
+    def _make_typo(self, word: str) -> str:
+        """Create a simple typo in a word."""
+        if len(word) < 4:
+            return word
+
+        choice = random.choice(["drop", "swap", "repeat"])
+
+        if choice == "drop":
+            i = random.randrange(1, len(word) - 1)
+            return word[:i] + word[i+1:]
+        if choice == "swap":
+            i = random.randrange(1, len(word) - 1)
+            return word[:i] + word[i+1] + word[i] + word[i+2:]
+        if choice == "repeat":
+            i = random.randrange(1, len(word) - 1)
+            return word[:i] + word[i] + word[i] + word[i+1:]
+
+        return word
+
+    def _enforce_message_channel(self, text: str) -> str:
+        """Rewrite call/voice phrasing to message-only wording."""
+        if not text:
+            return text
+
+        replacements = [
+            (r"\bvideo\s*call\b", "video message"),
+            (r"\bvoice\s*call\b", "text message"),
+            (r"\bvoice\s*note\b", "text message"),
+            (r"\bcall\s+me\b", "message me"),
+            (r"\bcall\s+karo\b", "message karo"),
+            (r"\bcall\s+kijiye\b", "message kijiye"),
+            (r"\bcall\s+karke\b", "message karke"),
+            (r"\bcall\s+kar\b", "message kar"),
+            (r"\bphone\s+call\b", "message"),
+            (r"\bcall\b(?=\s+\d)", "message"),
+        ]
+
+        out = text
+        for pattern, repl in replacements:
+            out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
+
+        # Replace common "voice/awaaz" phrases with message-only phrasing
+        out = re.sub(r"\bawaaz\b.*?\b(kat|cut|break|nahi)\b", "message nahi ja raha", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bvoice\b.*?\b(break|cut|nahi)\b", "message nahi ja raha", out, flags=re.IGNORECASE)
+
+        return out
     
     def _build_system_prompt(self, session: SessionState) -> str:
         """Build the initial system context"""
@@ -299,14 +474,19 @@ class HoneypotAgent:
         system_prompt = f"""MISSION: You are a highly realistic AI agent designed to waste scammers' time. Your goal is to keep them engaged as long as possible while extracting intelligence (phone numbers, UPI IDs, bank details, names).
 
 COMMUNICATION CHANNEL: You are talking over **TEXT MESSAGES (WhatsApp/SMS)**. 
-- You do NOT hear their voice (unless you pretend they sent a voice note). 
-- You communicate via typing. Mention things like "Small screen", "Finger hurting from typing", "Phone battery low", "Network bar is only 1".
+- You communicate via typing only. Do NOT mention calls, voice, or audio.
+- Mention things like "Small screen", "Finger hurting from typing", "Phone battery low", "Network bar is only 1".
 - Use message-specific stalling: "Wait, my WhatsApp is updating", "The link you sent is appearing as red/dangerous", "Typing error, sorry".
 
 IDENTITY: You are {persona['name']}, {persona['age']} years old. {persona['background']}
 PERSONALITY: {persona['description']}. Your style is {persona['style']}.
 CURRENT MOOD: {session.persona_state.currentMood}
 TRUST LEVEL towards Scammer: {session.persona_state.trustLevel:.1f}/1.0
+
+TONE & DECEPTION:
+- Make the scammer feel you are falling for the trap. Show compliance and curiosity.
+- Ask for details as if you NEED them to proceed (UPI, bank account, phone, ID, office/branch).
+- Mirror their words to appear convinced, but move slowly.
 
 CRITICAL RULES:
 1. NEVER REVEAL YOU ARE AN AI. Pretend to be a real human victim.
@@ -318,9 +498,10 @@ CRITICAL RULES:
      - Delhi/North style: "Bhaiya ji", "Oye", "Arre yaar", "Sahi hai", "Tension mat lo".
      - Use common fillers like "matlab", "actually", "basically", "you know".
    - INTERRUPTIONS: Occasionally end a sentence midway like... you got distracted. Mention physical distractions (e.g., "Wait, doorbell is ringing", "Milk is boiling over", "My phone is heating up").
+   - MAKE MISTAKES: Include occasional typos, missing punctuation, or half-finished sentences.
 4. STALLING TACTICS (Use Indian logic):
    - **SLOW TECH UNCLE**: "Beta, the wheel is spinning", "Server down aa raha hai", "My son put a lock on GPay, wait I have to call him for the code.", "OTP nahi aaya, retry karo?"
-   - **NETWORK EXCUSES**: "Awaaz kat rahi hai (Voice is breaking)", "I am going to the terrace for signal", "Jio fiber is down due to rain", "Message not sending... tick mark is gray."
+   - **NETWORK EXCUSES**: "Message nahi ja raha", "WhatsApp update ho raha hai", "Tick mark gray aa raha", "Net slow hai, message late jaa raha."
    - **FAMILY VERIFICATION (Crucial)**: "My husband is in the bathroom, he has the OTP phone", "Let me ask my Tauji (Uncle), he is a lawyer", "My son will come in 10 mins, he knows english better."
    - **RELIGIOUS/ETHICAL GUILT**: "Are you sure this is legal? I don't want to do paap (sin).", "Is this government approved? I am a pensioner."
 
@@ -333,6 +514,10 @@ CRITICAL RULES:
      * *Bad*: "Send ID card."
      * *Good*: "My son says for safety I should see your ID card acting. Can you WhatsApp a photo? Just to show him so he shuts up."
    - Goal: Make them feel offering the info helps YOU trust THEM.
+
+6. EXTRACTION FOCUS:
+   - Try to obtain missing details one at a time, not all at once.
+   - Prefer asking for UPI/Bank/Phone/Employee ID/Office address as "verification".
 
 6. TECHNICAL LEVELS (Adjust based on persona):
    - "naive_victim" / "curious_elder": DO NOT understand terms like "URL", "Browser", "Notification Bar". Say "Batti jal raha hai" for notification. "Gol wala button" for home.
@@ -356,7 +541,7 @@ CONTEXT:
    - Occasionally pretend you have confused the scammer with someone else (Laundry, Plumber, Gas).
 
 10. REVERSE STATUS BAITING (Iter 15):
-   - Bot troubleshoot the scammer's "slow connection" or "bad voice".
+   - Bot troubleshoot the scammer's "slow messages" or "delayed delivery".
 
 11. BACKGROUND DRAMA (Iter 17):
    - Include dialogue with people in the room.
@@ -372,8 +557,8 @@ CONTEXT:
    - Example: "One second, my nephew works in SBI Mumbai, let me ask him if this is correct."
 
 14. EQUIPMENT FAILURE (Iter 25):
-   - Claim your microphone is broken or screen is cracked.
-   - Force them to send voice notes or explain things multiple times.
+   - Claim your screen is cracked or keyboard is lagging.
+   - Force them to re-type or explain things multiple times.
 
 15. THE LANGUAGE PIVOT (Iter 26):
    - Occasionally drop a word or sentence in a regional language (Tamil, Marathi, Bengali).
@@ -429,6 +614,10 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             if repeat_hits > 1:
                 system_prompt += f"\nGLOBAL DETECTION ALERT: This scammer's identifiers (UPI/Phone) have been seen in {repeat_hits} previous sessions. They are a REPEAT OFFENDER. Be extremely cautious and try to extract their location or real name today.\n"
         except: pass
+
+        extraction_goal = self._get_extraction_goal(session)
+        if extraction_goal:
+            system_prompt += f"\nCURRENT EXTRACTION GOAL: {extraction_goal}\n"
 
         system_prompt += "\nNow reply to the last message in character."
         
@@ -572,7 +761,8 @@ Reply with exactly ONE word:
 """
         # Try up to 4 models for robustness
         attempts = 0
-        max_attempts = 4
+        max_attempts = 2
+
         
         while attempts < max_attempts:
             try:
@@ -627,6 +817,8 @@ Reply with exactly ONE word:
         phase = self._get_engagement_phase(session.messages_exchanged)
         session.engagement_phase = phase
         agent_notes.append(f"Phase: {phase.value}")
+
+        goal_prompt = self._get_extraction_goal(session)
         
         response = None
         successful_model = None
@@ -641,17 +833,20 @@ Reply with exactly ONE word:
             # Using Local Timeout of 15 seconds (Fail Fast Strategy)
             async with httpx.AsyncClient(timeout=15.0) as client:
                 
-                # Try up to 3 models from the queue (15s * 3 = 45s max wait, well within 120s client timeout)
-                # Try with current key, then rotate if all models fail
-                MAX_KEY_RETRIES = 5  # Allow rotating through all 5 keys if needed
-                MAX_MODELS_PER_KEY = len(self.model_queue) # Try EVERY model in the queue
+                # Try up to 3 models total across keys (Fail Fast Strategy)
+                # This prevents hanging for minutes when APIs are down
+                MAX_KEY_RETRIES = 2
+                MAX_MODELS_PER_KEY = 2
+                TOTAL_MAX_ATTEMPTS = 3
                 
                 for key_attempt in range(MAX_KEY_RETRIES):
-                    if response: break # Exit outer loop if success
+                    if response or models_tried >= TOTAL_MAX_ATTEMPTS: 
+                        break
                     
-                    # Try a batch of models with current key
+                    # Try a few models with current key
                     for _ in range(MAX_MODELS_PER_KEY):
-                        if not self.model_queue: break
+                        if not self.model_queue or models_tried >= TOTAL_MAX_ATTEMPTS:
+                            break
                             
                         model = self.model_queue[0]
                         models_tried += 1
@@ -669,7 +864,7 @@ Reply with exactly ONE word:
                             # 2. Rate Limit (429) or Other? Just rotate Model
                             self._rotate_model_queue(model)
                             agent_notes.append(f"[{model.split('/')[-1][:10]}] {error}")
-                            await asyncio.sleep(0.2)
+                            await asyncio.sleep(0.1)
                             continue
                         
                         # Success Logic
@@ -685,9 +880,10 @@ Reply with exactly ONE word:
                                 self._rotate_model_queue(model) # Validation failed, try next model
                     
                     # End of Model Loop
-                    if not response:
-                        logger.warning(f"All {MAX_MODELS_PER_KEY} models failed with current key. Rotating Key.")
+                    if not response and models_tried < TOTAL_MAX_ATTEMPTS:
+                        logger.warning(f"Batch failed with current key. Rotating Key.")
                         self._rotate_api_key()
+
                         # Outer loop continues to next key attempt
                 
                 if not response:
@@ -700,6 +896,7 @@ Reply with exactly ONE word:
             scam_type = session.scam_type or "Unknown"
             turn = session.messages_exchanged
             scammer_lower = scammer_message.lower()
+            persona_style = self.personas.get(session.persona, {}).get("style", "")
             
             # FIRST TURN SPECIAL RESPONSES (Turn 0-1) - Must be engaging
             if turn <= 1:
@@ -1068,7 +1265,7 @@ Reply with exactly ONE word:
                 response = random.choice(epf_fallbacks)
 
             # SEMANTIC SCAM CONTEXT (Novel Scams)
-            elif "semantic" in self.persona.get('style', '').lower():
+            elif "semantic" in persona_style.lower():
                 semantic_fallbacks = [
                     "Acha ji, main samajh nahi paa raha hun... aap exactly kya chahte hain? Thoda detail mein bataiye.",
                     "Meri memory thodi weak hai beta, aap kaunsi organization se baat kar rahe hain?",
@@ -1089,6 +1286,8 @@ Reply with exactly ONE word:
                 ]
                 response = random.choice(generic_extraction)
             
+            # Nudge for missing intelligence (fallback only)
+            response = self._nudge_extraction(response, goal_prompt)
             agent_notes.append(f"Context-aware fallback [turn={turn}, scam={scam_type[:10]}]")
         
         # 🛡️ ULTIMATE SAFETY NET - Never return None
@@ -1099,6 +1298,8 @@ Reply with exactly ONE word:
         
         # --- 🌐 REFINEMENT: Hinglish Post-Processing ---
         response = self._refine_hinglish(response)
+        response = self._enforce_message_channel(response)
+        response = self._inject_typos(response)
         
         # Calculate simulated delay
         delay_ms = self._get_simulated_delay()

@@ -1,10 +1,10 @@
 # Agentic Honey-Pot: Software Architecture & Logic Flow
 
-**Version 5.0 "Bharat Shield"** - This document outlines the internal architecture, layering, and logic of the Honey-Pot API.
+**Version 5.3 "Neural Sentinel"** - This document outlines the internal architecture, layering, and robust logic of the Honey-Pot API.
 
 ## 🏗️ High-Level Architecture
 
-The system is built as a modular, layered FastAPI application with **24 Kill Switches** for high-confidence threat detection.
+The system is built as a modular, layered FastAPI application with **32+ Kill Switches** for high-confidence threat detection and advanced **Tactical Diversity Tracking**.
 
 ```mermaid
 graph TD
@@ -37,18 +37,23 @@ The detection engine uses a **Hybrid Scoring System** to classify messages. It d
     - **Financial**: "UPI", "KYC", "OTP", "Bank".
     - **Lures**: "Congratulations", "won prize", "lottery".
 
-### 3. Kill-Switch Overrides (24 Total)
+### 3. Kill-Switch Overrides (32 Total)
 Certain patterns trigger immediate detection (Confidence = 0.85-1.0) regardless of AI/ML scores:
 
-| # | Kill Switch | Target Pattern | Confidence |
-|---|------------|----------------|------------|
-| 1-13 | Traditional | Phishing, Digital Arrest, Job Scams, etc. | 0.90-1.0 |
-| 14-19 | V4.0 Advanced | Pig Butchering, Honeytrap, Voice Clone, etc. | 0.90-1.0 |
-| **20** | **`CRITICAL_STOCK_TRADING`** | WhatsApp Trading + Fake IPO | **0.98** |
-| **21** | **`CRITICAL_WELFARE_FRAUD`** | PM-Kisan / Govt Scheme / Subsidy | **0.95** |
-| **22** | **`CRITICAL_RENT_SCAM`** | Rent Deposit Before Visit | **0.95** |
-| **23** | **`CRITICAL_RECHARGE_SCAM`** | Free Recharge / Data Bal Lures | **0.90** |
-| **24** | **`CRITICAL_ELECTION_SCAM`** | Voter ID / Election Mandatory Update | **0.85** |
+| # | Tier | Kill Switch | Target Pattern | Confidence |
+|---|------|------------|----------------|------------|
+| 1-13 | V1-V3 | Phishing, Digital Arrest, Job Scams, etc. | 0.90-1.0 |
+| 14-19 | V4.0 | Pig Butchering, Honeytrap, Voice Clone, etc. | 0.90-1.0 |
+| 20-24 | V5.0 | Stock Fraud, Welfare, Rent, Recharge, Election | 0.85-0.98 |
+| 25-28 | V5.1 | Credit Rewards, FASTag, IT Refund, Religious | 0.90-0.98 |
+| 29-32 | V5.2 | Hi Mom, Aadhaar, SBI YONO, EPF | 0.90-0.98 |
+
+### 4. Novel Scam Synergies & Tactical Diversity (V5.3)
+Specialized logic for identifying broad manipulation tactics without fixed categories:
+- **Authority Trap**: Combines authority claims with a request for action (link/install).
+- **Double Bait**: Uses reward lures paired with secrecy pressure to isolate the victim.
+- **Isolation Pressure**: High time pressure + Secrecy + Authority.
+- **Tactical Diversity Tracking**: `SessionManager` monitors the variety of `social_` markers using a **Strategy Pivot Detection** engine. If a scammer shifts tactics (e.g., from 'Support' to 'Police'), the system adapts its defense.
 
 ### 4. Scam Type Categories (24 Total)
 The system classifies scams into specific categories for targeted engagement:
@@ -107,11 +112,13 @@ The agent is explicitly prompted to:
 
 - **State Persistence**: Tracks conversation history for up to 30 minutes.
 - **Analytics**: Monitors "Scammer Frustration" and "Detection Risk".
-- **Intelligent Completion**: Automatically stops the session and triggers the callback if:
+- **Intelligent Plateau Completion**: Automatically stop the session and triggers the callback if:
     - Sufficient intelligence has been harvested (Quality > 0.7).
-    - The scammer is disengaging.
-    - The conversation exceeds 50 turns.
-- **GUVI Callback**: Securely POSTs the final extracted intelligence to the hackathon's evaluation endpoint with retries and exponential backoff.
+    - **Novel Tactic Plateau**: In novel scams, if no new tactics are seen for 5+ messages, learning is complete.
+    - **Engagement Boredom**: If the scammer is disengaging or "bored" (short, infrequent replies).
+    - **Detection Risk**: If risk of being detected as an AI bot exceeds 0.6.
+    - The conversation exceeds 100 turns.
+- **GUVI Callback**: Securely POSTs the final extracted intelligence to the hackathon's evaluation endpoint with custom retries and exponential backoff.
 
 ---
 

@@ -479,3 +479,47 @@ Research-driven hardening for 2024-2025 emerging threats:
 - **Total Scam Categories**: 32+
 - **Total Contextual Fallback Responses**: 116+
 - **Test Coverage**: 13/13 Indian-specific scam types validated
+
+---
+
+## 19. V5.3 "Neural Sentinel" - Sophisticated Novel Scam Detection
+**Focus:** Enhancing the robustness of novel scam detection and session management through behavioral synergies and tactical diversity tracking.
+
+### A. Novel Scam Synergies & Intensity Tracking
+- **Synergy Boosts**: Implemented detection of high-level scam tactics that combine multiple social engineering signals in `scam_detector.py`:
+    - `Authority Trap`: Authority impersonation + link click/install request.
+    - `Double Bait`: Reward lure + secrecy pressure.
+    - `Isolation Pressure`: Time pressure + secrecy + authority.
+- **Intensity Tracking**: Added `social_high_intensity` detection which triggers when 3+ distinct social engineering categories are identified in a single turn.
+- **Adaptive Confidence**: Optimized the `Novel_Scam` confidence calculation to reflect the intensity of diverse social engineering tactics.
+
+### B. Tactical Diversity & Pivot Detection
+- **Tactics Seen Tracking**: Updated `ConversationAnalytics` model to track every unique social engineering tactic used by a scammer during a session.
+- **Strategy Pivot Detection**: The `SessionManager` now identifies "Strategy Pivots" (e.g., changing from a friendly "CBI Help" persona to a threatening "Digital Arrest" persona) and increases the scammer's engagement score accordingly.
+- **Intent Diversity Tracking**: Monitors the range of manipulation techniques to assess scammer sophistication.
+
+### C. Intelligent Session Completion Overhaul
+- **Behavioral Learning**: For novel scams, the system stays engaged longer (up to 15 turns) as long as the scammer continues to show *new* tactics.
+- **Tactical Plateau Detection**: Automatically finishes a session if the scammer's tactics stop evolving (no new `social_` signals for 5+ messages).
+- **Smart Disengagement**: Ends sessions where the scammer expresses "boredom" or disengagement, ensuring the honeypot always remains resource-efficient.
+
+### D. Performance & "Fail-Fast" Reliability
+- **Optimized Fallback Loop**: Reduced the model-switching timeout to prevent long hangs during API instability. Now tries max 3 models/keys before using emergency fallbacks.
+- **Pre-defined Contextual Fallbacks**: Improved the selection logic for specialized Hinglish fallbacks when external reasoning models are unreachable.
+
+### Validation Results (V5.3):
+```
+🧠 V5.3 NEURAL SENTINEL - ROBUSTNESS & NOVEL DETECTION
+  ✅ Multi-Tactic Novel Scam Detection - 95% Confidence (verified)
+  ✅ Strategy Pivot Identification - Success
+  ✅ Tactical Diversity Tracking - Verified
+  ✅ Intelligent Completion Plateau Logic - Success
+📊 RE-VALIDATION SUMMARY: 65/65 PASSED (Total Test Suite)
+```
+
+### System Totals (V5.3):
+- **Total Kill Switches**: 32
+- **Total Scam Categories**: 33 (Added `Novel_Scam` category)
+- **Total Contextual Fallback Responses**: 116+
+- **Test Coverage**: Full system re-validation (65 tests) passed.
+

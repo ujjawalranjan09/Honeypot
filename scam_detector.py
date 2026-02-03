@@ -4,6 +4,8 @@ Uses ML model + rule-based patterns + contextual analysis + sentiment detection
 """
 import re
 import os
+import json
+from datetime import datetime
 import joblib
 import pandas as pd
 from typing import Tuple, List, Optional, Dict
@@ -21,6 +23,9 @@ from config import (
     MODEL_PARAMS,
     SENTIMENT_PATTERNS,
     SCAM_PROGRESSION_PATTERNS,
+    NOVEL_SAMPLE_LOG_ENABLED,
+    NOVEL_SAMPLE_LOG_PATH,
+    NOVEL_SAMPLE_MAX_LEN,
 )
 from models import Message, ThreatLevel, ScamClassification
 from exceptions import ModelNotTrainedError, ModelPredictionError
@@ -282,9 +287,57 @@ class ScamDetector:
             r'www\.[^\s]+(?:verify|secure|confirm)',
             r'http[s]?://\d+\.\d+\.\d+\.\d+',  # IP-based URLs
         ]
+
+        # Generic Social Engineering (Novel Scam) Patterns
+        # These are broad intent signals that generalize to unseen scam types
+        self.social_engineering_patterns = {
+            "credential_request": [
+                r"\b(otp|one[-\s]?time\s+password|passcode|verification\s+code|auth\s+code|pin|cvv|password|2fa)\b",
+            ],
+            "payment_request": [
+                r"\b(pay|payment|transfer|send|deposit|remit|wire|recharge|top[-\s]?up)\b",
+                r"\b(fee|charge|tax|processing\s+fee|security\s+deposit|advance)\b",
+                r"\b(upi|bank\s+account|wallet|crypto|usdt|bitcoin|btc|eth)\b",
+            ],
+            "account_action": [
+                r"\b(verify|update|activate|reactivate|unlock|unblock|suspend|blocked|deactivate|kyc|link)\b",
+            ],
+            "link_or_install": [
+                r"\b(link|url|website|portal|login|click|download|install|apk|app|application)\b",
+            ],
+            "authority_impersonation": [
+                r"\b(officer|agent|representative|customer\s+care|support|bank|government|police|regulator)\b",
+            ],
+            "off_platform": [
+                r"\b(whatsapp|telegram|dm|direct\s+message|call\s+me|phone\s+me|mobile)\b",
+            ],
+            "reward_lure": [
+                r"\b(prize|bonus|gift|refund|cashback|offer|free|winner|selected|approved)\b",
+            ],
+            "secrecy_pressure": [
+                r"\b(don't\s+tell|do\s+not\s+share|keep\s+this\s+confidential|secret|private)\b",
+            ],
+            "time_pressure": [
+                r"\b(urgent|immediately|now|within\s+\d+\s+(minutes?|hours?|days?)|last\s+chance)\b",
+            ],
+        }
+
+        self.social_engineering_weights = {
+            "credential_request": 0.25,
+            "payment_request": 0.25,
+            "account_action": 0.20,
+            "link_or_install": 0.20,
+            "authority_impersonation": 0.15,
+            "off_platform": 0.10,
+            "reward_lure": 0.15,
+            "secrecy_pressure": 0.15,
+            "time_pressure": 0.15,
+        }
         
         # Compile sentiment patterns
         self._compile_sentiment_patterns()
+        # Compile social engineering patterns
+        self._compile_social_engineering_patterns()
         
         # Load trained model if available
         self._load_model()
@@ -296,6 +349,56 @@ class ScamDetector:
             self.compiled_sentiment[category] = [
                 re.compile(p, re.IGNORECASE) for p in patterns
             ]
+
+    def _compile_social_engineering_patterns(self):
+        """Pre-compile regex patterns for social engineering detection"""
+        self.compiled_social = {}
+        for category, patterns in self.social_engineering_patterns.items():
+            self.compiled_social[category] = [
+                re.compile(p, re.IGNORECASE) for p in patterns
+            ]
+
+    def _redact_text(self, text: str) -> str:
+        """Basic redaction for logging samples safely"""
+        redacted = re.sub(r'https?://\S+', '[link]', text)
+        redacted = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}', '[email]', redacted)
+        redacted = re.sub(r'\b\d{6,}\b', '[number]', redacted)
+        return redacted
+
+    def _log_novel_sample(
+        self,
+        text: str,
+        combined_score: float,
+        social_score: float,
+        rule_score: float,
+        ml_score: float,
+        sentiment_score: float,
+        context_score: float,
+        detected_keywords: List[str],
+        social_patterns: List[str]
+    ) -> None:
+        """Optional hook to capture novel-scam candidates for review/retraining"""
+        if not NOVEL_SAMPLE_LOG_ENABLED:
+            return
+
+        try:
+            payload = {
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "combined_score": round(combined_score, 4),
+                "social_score": round(social_score, 4),
+                "rule_score": round(rule_score, 4),
+                "ml_score": round(ml_score, 4),
+                "sentiment_score": round(sentiment_score, 4),
+                "context_score": round(context_score, 4),
+                "detected_keywords": list(set(detected_keywords))[:20],
+                "social_patterns": social_patterns,
+                "text": text[:NOVEL_SAMPLE_MAX_LEN],
+                "redacted_text": self._redact_text(text)[:NOVEL_SAMPLE_MAX_LEN],
+            }
+            with open(NOVEL_SAMPLE_LOG_PATH, "a", encoding="utf-8") as f:
+                f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        except Exception as e:
+            logger.warning(f"Novel sample logging failed: {e}")
     
     def _load_model(self):
         """Load pre-trained model if available"""
@@ -640,6 +743,74 @@ class ScamDetector:
                 patterns_found.append("greed_trap")
         
         return min(score, 0.6), list(set(patterns_found))
+
+    def _analyze_social_engineering(self, text: str) -> Tuple[float, List[str]]:
+        """
+        Analyze generic social-engineering cues that generalize to novel scams
+        Returns (social_score, detected_patterns)
+        """
+        score = 0.0
+        patterns_found = []
+
+        # Category-based pattern hits
+        for category, patterns in self.compiled_social.items():
+            if any(p.search(text) for p in patterns):
+                score += self.social_engineering_weights.get(category, 0.1)
+                patterns_found.append(f"social_{category}")
+
+        # Multi-action imperatives often appear in scam scripts
+        action_hits = re.findall(
+            r"\b(send|share|click|download|install|transfer|pay|verify|update|call|reply|submit|open)\b",
+            text.lower()
+        )
+        if len(action_hits) >= 2:
+            score += 0.10
+            patterns_found.append("social_multiple_actions")
+
+        # Explicit money amounts add risk in context of actions
+        if re.search(r"(₹|rs\.?|inr|usd|\$)\s*\d{2,}", text, re.IGNORECASE):
+            score += 0.10
+            patterns_found.append("social_money_amount")
+
+        # Synergy boosts for common scam intent combinations
+        has_cred = any(p.startswith("social_credential_request") for p in patterns_found)
+        has_pay = any(p.startswith("social_payment_request") for p in patterns_found)
+        has_link = any(p.startswith("social_link_or_install") for p in patterns_found)
+        has_auth = any(p.startswith("social_authority_impersonation") for p in patterns_found)
+        has_time = any(p.startswith("social_time_pressure") for p in patterns_found)
+        has_secrecy = any(p.startswith("social_secrecy_pressure") for p in patterns_found)
+        has_reward = any(p.startswith("social_reward_lure") for p in patterns_found)
+
+        if has_cred and has_time:
+            score += 0.15
+            patterns_found.append("social_combo_cred_time")
+        if has_pay and has_time:
+            score += 0.10
+            patterns_found.append("social_combo_pay_time")
+        if has_link and has_cred:
+            score += 0.10
+            patterns_found.append("social_combo_link_cred")
+        if has_auth and (has_pay or has_cred or has_link):
+            score += 0.15
+            patterns_found.append("social_combo_authority_trap")
+        if has_secrecy and (has_pay or has_cred or has_time):
+            score += 0.15
+            patterns_found.append("social_combo_secrecy_pressure")
+        if has_reward and has_secrecy:
+            score += 0.10
+            patterns_found.append("social_combo_double_bait")
+        if has_time and has_secrecy and has_auth:
+            score += 0.20
+            patterns_found.append("social_combo_isolation_cell")
+
+        # Intensity check: multiple distinct novel categories boost confidence
+        distinct_categories = set(p.split('_')[1] for p in patterns_found if p.startswith("social_") and not p.startswith("social_combo"))
+        if len(distinct_categories) >= 3:
+            score += 0.15
+            patterns_found.append("social_high_intensity")
+
+        return min(score, 0.95), list(set(patterns_found))
+
     
     def _analyze_context(self, current_message: str, context: List[str]) -> Tuple[float, List[str]]:
         """
@@ -911,7 +1082,11 @@ class ScamDetector:
         # Get sentiment analysis score
         sentiment_score, sentiment_patterns = self._analyze_sentiment(text)
         detected_keywords.extend(sentiment_patterns)
-        
+
+        # Get generic social-engineering score (novel scam cues)
+        social_score, social_patterns = self._analyze_social_engineering(text)
+        detected_keywords.extend(social_patterns)
+
         # Get context analysis score
         context_score, context_patterns = self._analyze_context(text, context)
         detected_keywords.extend(context_patterns)
@@ -970,10 +1145,16 @@ class ScamDetector:
             logger.info(f"Kill switch: Sextortion pattern detected")
 
         # 4. Financial Request + Threat = 0.95 Scam (Extortion pattern)
-        if (('upi_id_request' in detected_keywords or 
-             any(kw in detected_keywords for kw in self.financial_keywords)) and \
-            any(kw in detected_keywords for kw in self.threat_keywords)) and \
-           not any(kw in text.lower() for kw in ['airtel', 'jio', 'vi', 'bsnl', 'challan', 'rto', 'customer care', 'agent id']):
+        # Refined: require explicit payment/money intent to avoid misclassifying OTP phishing
+        payment_intent = bool(re.search(
+            r"\b(pay|payment|transfer|send|deposit|money|amount|rs\.?|inr|₹|upi)\b",
+            text.lower()
+        ))
+        if (payment_intent and
+            ('upi_id_request' in detected_keywords or 
+             any(kw in detected_keywords for kw in self.financial_keywords)) and
+            any(kw in detected_keywords for kw in self.threat_keywords) and
+            not any(kw in text.lower() for kw in ['airtel', 'jio', 'vi', 'bsnl', 'challan', 'rto', 'customer care', 'agent id'])):
             kill_switch_score = max(kill_switch_score, 0.95)
             kill_switch_triggered = True
             detected_keywords.append("CRITICAL_EXTORTION_COMBO")
@@ -1220,21 +1401,24 @@ class ScamDetector:
         if kill_switch_triggered and kill_switch_score > 0:
             combined_score = kill_switch_score
         else:
-            # Fallback to weighted average
-            if self.is_trained:
-                combined_score = float(
-                    (ml_score * SCORING_WEIGHTS["ml_model"]) +
-                    (rule_score * SCORING_WEIGHTS["rule_based"]) +
-                    (context_score * SCORING_WEIGHTS["context_bonus"]) +
-                    (sentiment_score * SCORING_WEIGHTS["sentiment_weight"])
-                )
-            else:
-                # Without ML model, rely more on rules and sentiment
-                combined_score = float(
-                    (rule_score * 0.6) +
-                    (context_score * 0.25) +
-                    (sentiment_score * 0.15)
-                )
+            # Weighted average with normalized weights (robust to new signals)
+            weights = {
+                "ml_model": SCORING_WEIGHTS.get("ml_model", 0.0) if self.is_trained else 0.0,
+                "rule_based": SCORING_WEIGHTS.get("rule_based", 0.0),
+                "context_bonus": SCORING_WEIGHTS.get("context_bonus", 0.0),
+                "sentiment_weight": SCORING_WEIGHTS.get("sentiment_weight", 0.0),
+                "social_engineering": SCORING_WEIGHTS.get("social_engineering", 0.0),
+            }
+            weight_sum = sum(weights.values()) or 1.0
+
+            combined_score = float(
+                (ml_score * weights["ml_model"]) +
+                (rule_score * weights["rule_based"]) +
+                (context_score * weights["context_bonus"]) +
+                (sentiment_score * weights["sentiment_weight"]) +
+                (social_score * weights["social_engineering"])
+            ) / weight_sum
+
         
         # 🛡️ SAFETY CHECK: Reduce score for likely legitimate messages
         # This reduces false positives for common transactional messages
@@ -1264,9 +1448,28 @@ class ScamDetector:
             old_score = combined_score
             combined_score *= 0.5  # Halve the scam score for legitimate-looking patterns
             logger.debug(f"Safety check: Reduced score from {old_score:.2f} to {combined_score:.2f} for legit pattern")
+
+        # Clamp to valid probability range
+        combined_score = max(0.0, min(combined_score, 1.0))
         
         # Determine scam type and alternatives
         scam_type, alt_types = self._determine_scam_type(text, detected_keywords)
+
+        # 🧪 NOVEL SCAM OVERRIDE: Strong social-engineering cues without a known category
+        novel_override = False
+        social_hits = [p for p in social_patterns if p.startswith("social_")]
+        if (
+            scam_type == "General_Scam"
+            and not kill_switch_triggered
+            and social_score >= 0.45
+            and len(social_hits) >= 2
+        ):
+            scam_type = "Novel_Scam"
+            detected_keywords.append("NOVEL_SOCIAL_ENGINEERING")
+            alt_types["Novel_Scam"] = round(social_score, 2)
+            # Nudge confidence to reflect strong novel scam intent
+            combined_score = max(combined_score, min(0.85, social_score + 0.15))
+            novel_override = True
         
         # Get adaptive threshold for this scam type
         threshold = SCAM_TYPE_THRESHOLDS.get(scam_type, SCAM_CONFIDENCE_THRESHOLD)
@@ -1289,8 +1492,21 @@ class ScamDetector:
             scamType=scam_type,
             confidence=combined_score,
             alternativeTypes=[{k: v} for k, v in alt_types.items()],
-            tacticsIdentified=list(set(sentiment_patterns + context_patterns))
+            tacticsIdentified=list(set(sentiment_patterns + context_patterns + social_patterns))
         )
+
+        if novel_override:
+            self._log_novel_sample(
+                text=text,
+                combined_score=combined_score,
+                social_score=social_score,
+                rule_score=rule_score,
+                ml_score=ml_score,
+                sentiment_score=sentiment_score,
+                context_score=context_score,
+                detected_keywords=detected_keywords,
+                social_patterns=social_patterns,
+            )
         
         log_with_context(
             logger, logging.DEBUG,

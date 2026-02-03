@@ -170,6 +170,8 @@ class ConversationAnalytics(BaseModel):
     newInfoEmergence: bool = Field(default=True, description="Is new info still emerging")
     detectionRisk: float = Field(default=0.0, description="0-1 risk of being detected as bot")
     scammer_sentiment: str = Field(default="neutral", description="Detected scammer mood: frustrated, threatening, neutral, bored")
+    tactics_seen: List[str] = Field(default_factory=list, description="Unique novel tactics (social_*) identified in this session")
+
 
 
 class ResponseQuality(BaseModel):
@@ -190,11 +192,11 @@ class SessionState(BaseModel):
     messages_exchanged: int = 0
     start_time: datetime = Field(default_factory=datetime.now)
     last_activity: datetime = Field(default_factory=datetime.now)
-    conversation_history: List[Message] = []
+    conversation_history: List[Message] = Field(default_factory=list)
     extracted_intelligence: ExtractedIntelligence = Field(default_factory=ExtractedIntelligence)
     scam_type: Optional[str] = None
     persona: str = "naive_victim"
-    agent_notes: List[str] = []
+    agent_notes: List[str] = Field(default_factory=list)
     engagement_complete: bool = False
     # New enhanced fields
     engagement_phase: EngagementPhase = Field(default=EngagementPhase.CONFUSION)
@@ -202,7 +204,7 @@ class SessionState(BaseModel):
     persona_state: PersonaState = Field(default_factory=PersonaState)
     analytics: ConversationAnalytics = Field(default_factory=ConversationAnalytics)
     intelligence_quality_score: float = Field(default=0.0, description="0-1 quality of extracted intel")
-    cumulative_scam_confidence: List[float] = Field(default=[], description="Confidence over time")
+    cumulative_scam_confidence: List[float] = Field(default_factory=list, description="Confidence over time")
     detected_language: str = Field(default="English")
     callback_sent: bool = Field(default=False)
     callback_attempts: int = Field(default=0)

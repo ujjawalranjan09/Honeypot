@@ -107,7 +107,7 @@ class TestMessageEndpoint:
         data = response.json()
         assert data["status"] == "success"
         assert data["scamDetected"] == True
-        assert "agentResponse" in data
+        assert "reply" in data
     
     def test_clean_message_handling(self, client, api_key, sample_clean_message):
         """Test that clean messages are handled properly"""

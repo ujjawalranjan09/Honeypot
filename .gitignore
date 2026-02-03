@@ -20,12 +20,16 @@ env/
 gemini_error.log
 server_log.txt
 
+# Local persistence
+scammer_database.json
+
 # Test outputs
 test_results_*.txt
 validation_results.txt
 *_output*.txt
 marathon_*.log
 *.jsonl
+novel_scam_samples.jsonl
 
 # Debug files
 debug_*.py

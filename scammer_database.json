@@ -12,6 +12,18 @@
       ],
       "hit_count": 2,
       "notes": []
+    },
+    "fraud@paytm": {
+      "first_seen": "2026-02-03T21:07:58.917209",
+      "last_seen": "2026-02-03T22:13:17.890482",
+      "sessions": [
+        "test-session-intel"
+      ],
+      "scam_types": [
+        "General_Scam"
+      ],
+      "hit_count": 4,
+      "notes": []
     }
   },
   "phone": {

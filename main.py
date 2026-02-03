@@ -643,9 +643,6 @@ if os.path.isdir("frontend"):
         logger.info("Frontend mounted successfully")
     except Exception as e:
         logger.error(f"Failed to mount frontend: {e}")
-        logger.info("Frontend mounted successfully")
-    except Exception as e:
-        logger.error(f"Failed to mount frontend: {e}")
 
 
 # ============== Custom OpenAPI Schema ==============

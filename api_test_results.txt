@@ -1,0 +1,40 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.3, pytest-7.4.3, pluggy-1.0.0 -- C:\Users\dell\anaconda3\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Python\honeypot-project
+configfile: pytest.ini
+plugins: anyio-3.7.1, dash-3.2.0, asyncio-0.23.2, cov-4.1.0
+asyncio: mode=Mode.STRICT
+collecting ... {"timestamp": "2026-02-03T16:41:02.387181Z", "level": "INFO", "logger": "honeypot.scam_detector", "message": "Loaded pre-trained scam detection model", "module": "scam_detector", "function": "_load_model", "line": 410, "thread": 6888, "threadName": "MainThread"}
+{"timestamp": "2026-02-03T16:41:02.389332Z", "level": "INFO", "logger": "honeypot.ai_agent", "message": "Multi-Model Agent configured. Queue size: 30, Key pool size: 5", "module": "ai_agent", "function": "__init__", "line": 103, "thread": 6888, "threadName": "MainThread"}
+{"timestamp": "2026-02-03T16:41:02.389332Z", "level": "INFO", "logger": "honeypot.ai_agent", "message": "Primary Model: google/gemma-3-27b-it:free", "module": "ai_agent", "function": "__init__", "line": 104, "thread": 6888, "threadName": "MainThread"}
+{"timestamp": "2026-02-03T16:41:02.404537Z", "level": "INFO", "logger": "honeypot.main", "message": "Frontend mounted successfully", "module": "main", "function": "<module>", "line": 643, "thread": 6888, "threadName": "MainThread"}
+collected 19 items
+
+tests/test_api.py::TestHealthEndpoint::test_health_check_no_auth PASSED  [  5%]
+tests/test_api.py::TestHealthEndpoint::test_health_check_returns_version PASSED [ 10%]
+tests/test_api.py::TestMessageEndpoint::test_message_requires_auth PASSED [ 15%]
+tests/test_api.py::TestMessageEndpoint::test_message_invalid_api_key PASSED [ 21%]
+tests/test_api.py::TestMessageEndpoint::test_scam_detection PASSED       [ 26%]
+tests/test_api.py::TestMessageEndpoint::test_clean_message_handling PASSED [ 31%]
+tests/test_api.py::TestMessageEndpoint::test_intelligence_extraction PASSED [ 36%]
+tests/test_api.py::TestMessageEndpoint::test_engagement_metrics_returned PASSED [ 42%]
+tests/test_api.py::TestMessageEndpoint::test_scam_classification_returned PASSED [ 47%]
+tests/test_api.py::TestMessageEndpoint::test_multi_turn_conversation PASSED [ 52%]
+tests/test_api.py::TestSessionEndpoint::test_session_status_requires_auth PASSED [ 57%]
+tests/test_api.py::TestSessionEndpoint::test_session_not_found PASSED    [ 63%]
+tests/test_api.py::TestSessionEndpoint::test_session_status_after_message PASSED [ 68%]
+tests/test_api.py::TestStatsEndpoint::test_stats_requires_auth PASSED    [ 73%]
+tests/test_api.py::TestStatsEndpoint::test_stats_returns_data PASSED     [ 78%]
+tests/test_api.py::TestPersonasEndpoint::test_personas_list PASSED       [ 84%]
+tests/test_api.py::TestTrainEndpoint::test_train_requires_auth PASSED    [ 89%]
+tests/test_api.py::TestOpenAPISchema::test_openapi_schema_available PASSED [ 94%]
+tests/test_api.py::TestOpenAPISchema::test_docs_available PASSED         [100%]
+
+============================== warnings summary ===============================
+C:\Users\dell\anaconda3\Lib\site-packages\pytz\tzinfo.py:27
+  C:\Users\dell\anaconda3\Lib\site-packages\pytz\tzinfo.py:27: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    _epoch = datetime.utcfromtimestamp(0)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================== 19 passed, 1 warning in 140.82s (0:02:20) ==================
