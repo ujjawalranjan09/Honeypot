@@ -414,9 +414,9 @@ async def process_message(
             is_scam = True
             confidence = max(confidence, llm_conf)
             scam_type = "Sophisticated_Scam" # Generic type for LLM catch
-                keywords.append("AI_SEMANTIC_DETECTION")
-                classification.scamType = scam_type
-                classification.confidence = llm_conf
+            keywords.append("AI_SEMANTIC_DETECTION")
+            classification.scamType = scam_type
+            classification.confidence = llm_conf
         
         # Log detection result
         api_logger.log_scam_detection(
