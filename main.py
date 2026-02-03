@@ -637,8 +637,13 @@ async def get_available_personas(api_key: str = Depends(verify_api_key)):
 # ============== Frontend ==============
 
 # Mount frontend if directory exists
+# Mount frontend if directory exists
 if os.path.isdir("frontend"):
-    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+    try:
+        app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+        logger.info("Frontend mounted successfully")
+    except Exception as e:
+        logger.error(f"Failed to mount frontend: {e}")
 
 
 # ============== Custom OpenAPI Schema ==============

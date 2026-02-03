@@ -295,10 +295,6 @@ class ScamDetector:
         try:
             if not dataset_paths:
                 dataset_paths = [
-                    "massive_200k_ultra_diverse_dataset_complete.csv",
-                    "massive_200k_ultra_diverse_dataset_clean.csv",
-                    "massive_200k_ultra_diverse_dataset.csv",
-                    "additional_data.csv",
                     "massive_20k_scam_dataset.csv",
                     "massive_5k_scam_dataset.csv"
                 ]

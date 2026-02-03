@@ -34,3 +34,5 @@ httpx>=0.26.0  # Required for TestClient
 
 # Optional: Advanced NER (if needed)
 # spacy==3.7.2
+# Static Files Support
+aiofiles>=23.2.0
