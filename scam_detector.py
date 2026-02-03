@@ -254,6 +254,25 @@ class ScamDetector:
             "pf withdrawal", "epf claim", "uan update", "epfo", "pf balance",
             "pf frozen", "pf transfer", "provident fund", "pf settlement"
         ]
+
+        # V5.3: Education / Scholarship Scams (Targeting Parents)
+        self.education_scam_keywords = [
+            "scholarship approved", "pm scholarship", "cbse grant", "exam result fee",
+            "school fee pending", "education loan approval", "child future fund", 
+            "admission quota", "exam paper leaked"
+        ]
+
+        # V5.3: Malware Lures (WhatsApp Pink/Gold)
+        self.malware_scam_keywords = [
+            "whatsapp gold", "whatsapp pink", "update to premium", "exclusive features",
+            "download apk", "install for 5g", "video call app", "screen share app"
+        ]
+
+        # V5.3: Telecom Mule / SMS Sender Apps
+        self.telecom_mule_keywords = [
+            "earn per sms", "rent your sim", "sms job", "background app",
+            "sms forwarder", "earn passive income sms", "wingo app"
+        ]
         
         # Suspicious link patterns
         self.suspicious_link_patterns = [

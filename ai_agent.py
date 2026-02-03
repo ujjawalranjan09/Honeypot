@@ -981,6 +981,36 @@ Reply with exactly ONE word:
                     "Income Tax officer bol rahe ho? Badge number kya hai aapka?",
                 ]
                 response = random.choice(it_fallbacks)
+            
+            # V5.3: EDUCATION / SCHOLARSHIP SCAM CONTEXT
+            elif any(word in scammer_lower for word in ['scholarship', 'exam fee', 'cbse', 'school grant']):
+                edu_fallbacks = [
+                    "Scholarship approved? Arre wah! Par mere bete ke toh marks sirf 40% aaye hain... wo eligible hai kya?",
+                    "Registration fee mang rahe ho? Govt scholarship toh free hoti hai na? Main school jaake pata karun?",
+                    "Link click karne se pehle bataiye... ye scholarship cash mein milegi ya fees mein adjust hogi?",
+                    "Aap Education Ministry se ho? Zara official circular ka number batao, main check karta hun.",
+                ]
+                response = random.choice(edu_fallbacks)
+
+            # V5.3: MALWARE / WHATSAPP GOLD CONTEXT
+            elif any(word in scammer_lower for word in ['whatsapp gold', 'pink', 'apk', 'install']):
+                malware_fallbacks = [
+                    "WhatsApp Gold? Mere phone mein toh Play Store pe nahi dikh raha. Direct APK kyu?",
+                    "Pink WhatsApp safe hai kya? Mere bank apps bhi isi phone mein hain... virus toh nahi aayega?",
+                    "Update karne ke liye alag se link kyu? Official app toh auto-update hota hai na?",
+                    "Features acche hain par... 'Unknown Sources' allow karne ko kyu bol raha hai phone?",
+                ]
+                response = random.choice(malware_fallbacks)
+
+            # V5.3: TELECOM MULE / SMS JOB CONTEXT
+            elif any(word in scammer_lower for word in ['sms job', 'rent sim', 'earn per sms']):
+                mule_fallbacks = [
+                    "Sim rent pe dena? Ye toh illegal lagta hai. Mere naam ka sim koi aur kyu use karega?",
+                    "Earn per SMS? Par unlimited pack toh free hota hai... company ko kya fayda?",
+                    "Background app install karna padega? Battery toh nahi khayega na? Aur security ka kya?",
+                    "Passive income accha hai par... agar police aayi toh sim kiske naam pe hoga? Mere ya aapke?",
+                ]
+                response = random.choice(mule_fallbacks)
 
             # V5.1: RELIGIOUS / RAM MANDIR SCAM CONTEXT
             elif any(word in scammer_lower for word in ['ram mandir', 'ayodhya', 'vip darshan', 'prasad', 'donation']):
