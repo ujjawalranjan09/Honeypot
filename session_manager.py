@@ -95,11 +95,20 @@ class SessionManager:
         if session.conversation_history:
             last_msg = session.conversation_history[-1]
             try:
-                last_time = datetime.fromisoformat(last_msg.timestamp.replace('Z', '+00:00'))
-                current_time = datetime.fromisoformat(message.timestamp.replace('Z', '+00:00'))
+                # Robust timestamp parsing (Handles ISO string or Epoch int/float)
+                def parse_ts(ts):
+                    if isinstance(ts, (int, float)):
+                        return datetime.fromtimestamp(ts)
+                    return datetime.fromisoformat(str(ts).replace('Z', '+00:00'))
+
+                last_time = parse_ts(last_msg.timestamp)
+                current_time = parse_ts(message.timestamp)
+                
                 time_diff = (current_time - last_time).total_seconds()
                 analytics.messageTimings.append(time_diff)
-            except (ValueError, TypeError):
+            except Exception as e:
+                # Log the specific error to help debugging
+                logger.error(f"Timestamp parsing error: {e}. Last: {last_msg.timestamp}, Curr: {message.timestamp}")
                 pass
         
         # Track message length
