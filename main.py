@@ -238,9 +238,10 @@ async def honeypot_exception_handler(request: Request, exc: HoneypotException):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle FastAPI validation errors with custom response"""
     body = await request.body()
+    error_msg = str(exc)
     log_with_context(
         logger, logging.WARNING,
-        f"Validation error: {str(exc)}",
+        f"Validation error: {error_msg}",
         path=request.url.path,
         body=body.decode()[:500] if body else "None"
     )
@@ -248,7 +249,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=422,
         content={
             "error": "VALIDATION_ERROR",
-            "message": "Invalid request body format",
+            "message": f"Validation failed: {exc.errors()[0]['msg'] if exc.errors() else error_msg}",
             "details": exc.errors(),
         }
     )
@@ -274,17 +275,21 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # ============== Dependencies ==============
 
-async def verify_api_key(x_api_key: str = Header(..., description="API Key for authentication", alias="x-api-key")):
-    """Verify API key from header"""
+async def verify_api_key(
+    x_api_key: Optional[str] = Header(None, description="API Key", alias="x-api-key")
+):
+    """Verify API key from header (Lenient to avoid 422 on missing header)"""
+    if not x_api_key:
+        raise InvalidAPIKeyError("Missing API Key")
+        
     if x_api_key != API_KEY:
-        raise InvalidAPIKeyError("Invalid or missing API key")
+        raise InvalidAPIKeyError("Invalid API key")
     return x_api_key
 
 
 async def check_rate_limit(request: Request):
     """Check rate limit for request"""
     client_ip = request.client.host if request.client else "unknown"
-    # Session ID will be checked per-endpoint if available
     return client_ip
 
 
