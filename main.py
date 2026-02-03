@@ -356,7 +356,6 @@ async def process_message(
             msg_text = raw_json["content"]
         elif "input" in raw_json:
             msg_text = raw_json["input"]
-        # If dict is just flat keys, maybe one is a message
     elif isinstance(raw_json, str):
         msg_text = raw_json
         
@@ -364,7 +363,6 @@ async def process_message(
     sender = "scammer"
     if isinstance(raw_json, dict):
         sender = raw_json.get("sender", raw_json.get("role", "scammer"))
-        # If raw_json['message'] was a dict, maybe sender is in there
         if isinstance(raw_json.get("message"), dict):
             sender = raw_json["message"].get("sender", sender)
             
@@ -384,39 +382,36 @@ async def process_message(
         session_id=session_id,
         body={"synthesized_text": msg_text[:50], "original_keys": list(raw_json.keys()) if isinstance(raw_json, dict) else "raw_string"}
     )
-
-    # ... Proceed with existing logic using these variables ...
     
     # Rate limit check
     if not rate_limiter.check_rate_limit(session_id, client_ip):
         raise RateLimitError(retry_after=60)
-        
-    # ... CONTINUE with existing logic below (lines 332+) using 'message_obj' and 'session_id' ...
-    # Detect scam with enhanced analysis (Rule-based first)
-    message = message_obj # Alias for compatibility with existing code below
-    
-    # Get conversation context (heuristic)
-    context = []
-    if isinstance(raw_json, dict) and "conversationHistory" in raw_json:
-         # Try to coerce request history if possible, else ignore
-         pass 
 
-    is_scam, confidence, scam_type, keywords, classification, threat_level = detector.detect(
-        message.text, context=context
-    )
-    
-    # 🧠 HYBRID UPGRADE: If Rule-based missed it, check Semantic Intent with LLM
-    if not is_scam and len(message.text) > 20 and agent.configured:
-        llm_is_scam, llm_conf, llm_reason = await agent.analyze_scam_intent(message.text)
+    try:
+        # Detect scam with enhanced analysis (Rule-based first)
+        message = message_obj 
         
-        if llm_is_scam and llm_conf > 0.4:
-            logger.warning(f"Semantic Override: LLM detected scam where Rules failed. Reason: {llm_reason}")
-            is_scam = True
-            confidence = max(confidence, llm_conf)
-            scam_type = "Sophisticated_Scam" # Generic type for LLM catch
-            keywords.append("AI_SEMANTIC_DETECTION")
-            classification.scamType = scam_type
-            classification.confidence = llm_conf
+        # Get conversation context (heuristic)
+        context = [] 
+        if isinstance(raw_json, dict) and "conversationHistory" in raw_json:
+             pass 
+
+        is_scam, confidence, scam_type, keywords, classification, threat_level = detector.detect(
+            message.text, context=context
+        )
+        
+        # 🧠 HYBRID UPGRADE: If Rule-based missed it, check Semantic Intent with LLM
+        if not is_scam and len(message.text) > 20 and agent.configured:
+            llm_is_scam, llm_conf, llm_reason = await agent.analyze_scam_intent(message.text)
+            
+            if llm_is_scam and llm_conf > 0.4:
+                logger.warning(f"Semantic Override: LLM detected scam where Rules failed. Reason: {llm_reason}")
+                is_scam = True
+                confidence = max(confidence, llm_conf)
+                scam_type = "Sophisticated_Scam" # Generic type for LLM catch
+                keywords.append("AI_SEMANTIC_DETECTION")
+                classification.scamType = scam_type
+                classification.confidence = llm_conf
         
         # Log detection result
         api_logger.log_scam_detection(
@@ -428,8 +423,10 @@ async def process_message(
         )
         
         # Update session
-        forced_persona = request_body.metadata.forcedPersona if request_body.metadata else None
-        
+        forced_persona = None
+        if isinstance(raw_json, dict) and raw_json.get("metadata"):
+             forced_persona = raw_json["metadata"].get("forcedPersona")
+
         session = await session_manager.update_session(
             session_id=session_id,
             message=message,
@@ -457,10 +454,7 @@ async def process_message(
             detectedLanguage=session.detected_language
         )
         
-        # Generate agent response for EVERY message (not just scam detected)
-        # This ensures we always engage and never return None
-        # Generate agent response ONLY if scam is detected or simulation is active
-        # This acts as a "Silent Observer" for benign messages
+        # Generate agent response for EVERY message
         if (is_scam or session.scam_detected) and not session.engagement_complete:
             try:
                 agent_response, agent_notes, delay_ms = await agent.generate_response(session, message.text)
@@ -503,10 +497,7 @@ async def process_message(
             account_count=len(intel.bankAccounts)
         )
         
-        # GUVI Callback - Send when engagement is complete or sufficient data collected
-        # Trigger conditions:
-        # 1. Scam detected AND engagement complete
-        # 2. Scam detected AND messages >= 5 AND any intelligence extracted
+        # GUVI Callback
         should_callback = (
             session.scam_detected and 
             not session.callback_sent and
