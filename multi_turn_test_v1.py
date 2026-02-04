@@ -11,7 +11,7 @@ import sys
 import os
 
 # --- CONFIGURATION ---
-API_URL = os.getenv("HONEYPOT_API_URL", "http://localhost:8000")
+API_URL = os.getenv("HONEYPOT_API_URL", "https://honeypot-p03w.onrender.com/")
 API_KEY = os.getenv("HONEYPOT_API_KEY", "your-secret-api-key-here")
 DELAY_SECONDS = 0.5 
 
