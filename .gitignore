@@ -44,7 +44,7 @@ fix_*.py
 
 # Model files
 *.pkl
-# *.joblib
+*.joblib
 
 # OS files
 .DS_Store
