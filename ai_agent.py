@@ -455,6 +455,10 @@ class HoneypotAgent:
             (r"\bcall\s+kar\b", "message kar"),
             (r"\bphone\s+call\b", "message"),
             (r"\bcall\b(?=\s+\d)", "message"),
+            (r"\bphir\s+se\s+boliye\b", "phir se likhiye"),
+            (r"\bphir\s+se\s+bolo\b", "phir se likho"),
+            (r"\bbol\s+rahe\s+ho\b", "likh rahe ho"),
+            (r"\bbol\s+rahe\s+hain\b", "likh rahe hain"),
         ]
 
         out = text
@@ -462,8 +466,11 @@ class HoneypotAgent:
             out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
 
         # Replace common "voice/awaaz" phrases with message-only phrasing
+        out = re.sub(r"\bawaaz\b.*?\b(aa\s+rahi|aa\s+raha|sunai|samajh)\b", "message clear nahi aa raha", out, flags=re.IGNORECASE)
         out = re.sub(r"\bawaaz\b.*?\b(kat|cut|break|nahi)\b", "message nahi ja raha", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bsunai\b.*?\b(nahi|kam|clear)\b", "message clear nahi aa raha", out, flags=re.IGNORECASE)
         out = re.sub(r"\bvoice\b.*?\b(break|cut|nahi)\b", "message nahi ja raha", out, flags=re.IGNORECASE)
+        out = re.sub(r"\bawaaz\b", "message", out, flags=re.IGNORECASE)
 
         return out
     
@@ -477,6 +484,7 @@ COMMUNICATION CHANNEL: You are talking over **TEXT MESSAGES (WhatsApp/SMS)**.
 - You communicate via typing only. Do NOT mention calls, voice, or audio.
 - Mention things like "Small screen", "Finger hurting from typing", "Phone battery low", "Network bar is only 1".
 - Use message-specific stalling: "Wait, my WhatsApp is updating", "The link you sent is appearing as red/dangerous", "Typing error, sorry".
+- If you accidentally think in call/voice terms, immediately rephrase to message/chat terms.
 
 IDENTITY: You are {persona['name']}, {persona['age']} years old. {persona['background']}
 PERSONALITY: {persona['description']}. Your style is {persona['style']}.
@@ -500,7 +508,7 @@ CRITICAL RULES:
    - INTERRUPTIONS: Occasionally end a sentence midway like... you got distracted. Mention physical distractions (e.g., "Wait, doorbell is ringing", "Milk is boiling over", "My phone is heating up").
    - MAKE MISTAKES: Include occasional typos, missing punctuation, or half-finished sentences.
 4. STALLING TACTICS (Use Indian logic):
-   - **SLOW TECH UNCLE**: "Beta, the wheel is spinning", "Server down aa raha hai", "My son put a lock on GPay, wait I have to call him for the code.", "OTP nahi aaya, retry karo?"
+   - **SLOW TECH UNCLE**: "Beta, the wheel is spinning", "Server down aa raha hai", "My son put a lock on GPay, wait I have to message him for the code.", "OTP nahi aaya, retry karo?"
    - **NETWORK EXCUSES**: "Message nahi ja raha", "WhatsApp update ho raha hai", "Tick mark gray aa raha", "Net slow hai, message late jaa raha."
    - **FAMILY VERIFICATION (Crucial)**: "My husband is in the bathroom, he has the OTP phone", "Let me ask my Tauji (Uncle), he is a lawyer", "My son will come in 10 mins, he knows english better."
    - **RELIGIOUS/ETHICAL GUILT**: "Are you sure this is legal? I don't want to do paap (sin).", "Is this government approved? I am a pensioner."
@@ -508,7 +516,7 @@ CRITICAL RULES:
 5. **CASUAL EXTRACTION** (Embed questions NATURALLY):
    - Do NOT interrogate ("Give name"). Instead, be conversational:
      * *Bad*: "What is your office address?"
-     * *Good*: "Sir, connection is bad. Are you calling from the Mumbai office or Delhi headquarters? Maybe I should try the landline number?"
+     * *Good*: "Sir, messages delayed aa rahe hain. Aap Mumbai office se message kar rahe ho ya Delhi HQ? Office ka official number/ID bhej do."
      * *Bad*: "Give UPI ID."
      * *Good*: "Okay I am opening GPay. It asks for 'Receiver Name' also. Does it show your name or company name? What should I check?"
      * *Bad*: "Send ID card."
@@ -526,7 +534,7 @@ CRITICAL RULES:
 CONTEXT:
 - You are strictly in the 'Confusion' or 'Compliance' phase. You play along but are incompetent or busy.
 - Do NOT repeat the same question (like "Give me number") twice in a row.
-- If they threaten police/arrest, get scared but don't hang up. Say "Please sir help me", "Don't arrest me".
+- If they threaten police/arrest, get scared but keep replying in chat. Say "Please sir help me", "Don't arrest me".
 
 7. DEEP BUREAUCRACY (For tech_skeptic):
    - MANDATORY: In your first or second reply, you MUST ALWAYS ask: "Can you send your Employee ID card photo? My husband says I should check it."
@@ -545,7 +553,7 @@ CONTEXT:
 
 11. BACKGROUND DRAMA (Iter 17):
    - Include dialogue with people in the room.
-   - Example: "(Shouting) RAJESH! I AM ON THE BANK CALL! STOP YELLING!"
+   - Example: "(Shouting) RAJESH! I AM ON THE BANK CHAT! STOP YELLING!"
    - Example: "Sorry sir, my daughter just dropped a glass... one second... (To daughter) Beta, use the broom!"
 
 12. FAKE UI ERROR (Iter 24):
@@ -592,11 +600,11 @@ If you have <8 Hindi words: REWRITE AND ADD MORE BEFORE SUBMITTING.
             
         # 3. Phase 4 Emotional Stalling (Turns 31+)
         if turn >= 31:
-            system_prompt += "\nPHASE 4 EMOTIONAL DRAMA: Start crying or getting extremely panicked. Threaten to record the call or tell them you are going to the police station yourself right now unless they help you.\n"
+            system_prompt += "\nPHASE 4 EMOTIONAL DRAMA: Start crying or getting extremely panicked. Threaten to take screenshots of the chat or tell them you are going to the police station yourself right now unless they help you.\n"
 
         # 4. Sentiment Feedback Loop
         if sentiment == "frustrated":
-            system_prompt += "\nSCAMMER STATUS: The scammer sounds FRUSTRATED. This is working! Double down on stalling. Ask them to repeat the last instruction because your 'phone hang ho gaya'.\n"
+            system_prompt += "\nSCAMMER STATUS: The scammer sounds FRUSTRATED. This is working! Double down on stalling. Ask them to repeat the last instruction because your 'app hang ho gaya'.\n"
         elif sentiment == "threatening":
             system_prompt += "\nSCAMMER STATUS: The scammer is THREATENING you. Act very scared ('bhagwan ke liye help kijiye') but don't give the info yet. Stall more.\n"
 
@@ -901,12 +909,12 @@ Reply with exactly ONE word:
             # FIRST TURN SPECIAL RESPONSES (Turn 0-1) - Must be engaging
             if turn <= 1:
                 first_turn_responses = [
-                    "Haan ji, ek minute ruko... main apna phone adjust kar raha hun. Aap kaun bol rahe ho?",
-                    "Arre! Haan bolo bhaiya... ye kya matter hai? Aap konsi company se ho?",
-                    "Ji haan, main sun raha hun. Aap pehle apna naam batao na, main note karunga.",
-                    "Hello hello? Thoda awaaz kam aa rahi hai... phir se bolo, aap kaun?",
+                    "Haan ji, ek minute ruko... main apna phone theek kar raha hun. Aap kaun message kar rahe ho?",
+                    "Arre! Haan likho bhaiya... ye kya matter hai? Aap konsi company se ho?",
+                    "Ji haan, main padh raha hun. Aap pehle apna naam batao na, main note karunga.",
+                    "Hello? Message clear nahi dikh raha... phir se likho, aap kaun?",
                     "Haan ji bhaiya, kya baat hai? Mujhe tension ho raha hai... sab theek hai na?",
-                    "Arre yaar, abhi abhi ghar aaya hun... batao kya hua? Kaun bol raha hai?",
+                    "Arre yaar, abhi abhi ghar aaya hun... batao kya hua? Kaun message kar raha hai?",
                 ]
                 response = random.choice(first_turn_responses)
             
@@ -914,8 +922,8 @@ Reply with exactly ONE word:
             elif any(word in scammer_lower for word in ['upi', 'bank', 'account', 'transfer', 'payment']):
                 banking_fallbacks = [
                     "Arre UPI? Ek minute bhaiya, main apna phone check karta hun... aapka UPI ID phir se batao?",
-                    "Bank se hai? Toh aap konsi branch se bol rahe ho? Mujhe manager ka number bhi do.",
-                    "Haan haan, main sun raha hun... par ye account number phir se repeat kariye?",
+                    "Bank se hai? Toh aap konsi branch se message kar rahe ho? Mujhe manager ka number bhi do.",
+                    "Haan haan, main padh raha hun... par ye account number phir se likhiye?",
                     "Payment karna hai? Theek hai, par pehle aap apna Employee ID card ka photo bhejo WhatsApp pe.",
                     "Ye UPI ID kissi ke naam se hai? Branch ka naam kya hai? Mujhe likhna padega.",
                 ]
@@ -947,7 +955,7 @@ Reply with exactly ONE word:
                 lic_fallbacks = [
                     "Arre LIC wale ho? Mere paas toh bahut policy hain... aap konse branch se ho? Naam batao.",
                     "Bonus approve? Arre wah! Main bahut excited hun! Par aapka agent number kya hai verify karne ke liye?",
-                    "Policy ka matter hai? Haan ji, main sun raha hun... par pehle aap apna ID number batao na.",
+                    "Policy ka matter hai? Haan ji, main padh raha hun... par pehle aap apna ID number batao na.",
                     "Insurance claim? Theek hai sir, par mera policy number toh aapke paas hoga na? Aap batao pehle.",
                     "Meri LIC policy ka bonus? Acha acha! Aap office aake miloge ya WhatsApp pe document bhejoge?",
                 ]
@@ -1031,7 +1039,7 @@ Reply with exactly ONE word:
             elif any(word in scammer_lower for word in ['i love you', 'trust me', 'lonely', 'widow', 'overseas', 'investment platform']):
                 pigbutcher_fallbacks = [
                     "I love you bhi? Arre, par humari toh pehli baat ho rahi hai! Aap sach mein pyaar karte ho?",
-                    "Maine aapko abhi tak dekha bhi nahi... pehle video call karo, phir investment ki baat karte hain.",
+                    "Maine aapko abhi tak dekha bhi nahi... pehle video message bhejo, phir investment ki baat karte hain.",
                     "Investment platform? Main pehle 100 dollar try karta hun. Agar double hue, main 1 lakh lagaunga. Aap guarantee doge?",
                     "Aap itni door se baat kar rahe ho... kya aapke paas passport hai? Mujhe photo bhejo.",
                     "Trust karna hai par paise bhi hai ki nahi confirm karna padega. Aap apni bank statement bhejo please.",
@@ -1044,7 +1052,7 @@ Reply with exactly ONE word:
                     "Recording kari? Par maine toh kuch galat nahi kiya... aap police ko hi bhej do, I have nothing to hide.",
                     "Viral karoge? Okay, par pehle mujhe wo video dikhao. Mujhe trust nahi ho raha.",
                     "Mere contacts ke paas bhejoge? Arre bhaiya, mere phone mein toh sirf ek contact hai - Meri Maa. Bhejo.",
-                    "Aapne call record kari? Par mera face toh camera mein nahi tha. Aap kisko blackmail kar rahe ho?",
+                    "Aapne video record kari? Par mera face toh camera mein nahi tha. Aap kisko blackmail kar rahe ho?",
                     "Paise dun? Par main itna gareeb hun mera balance 0 hai. Screen shot bhejun?",
                 ]
                 response = random.choice(honeytrap_fallbacks)
@@ -1052,9 +1060,9 @@ Reply with exactly ONE word:
             # AI VOICE CLONING / DEEPFAKE EMERGENCY CONTEXT
             elif any(word in scammer_lower for word in ['mom help', 'dad i need', 'accident', 'hospital', 'kidnapped', 'bail money', 'son in trouble']):
                 voiceclone_fallbacks = [
-                    "Beta, tum hospital mein ho? Par abhi toh tune uncle ke saath ghar se call kiya tha...",
+                    "Beta, tum hospital mein ho? Par abhi toh tune uncle ke saath ghar se message kiya tha...",
                     "Agar tum mera beta ho, toh batao - mere pet ka naam kya hai?",
-                    "Tum ro rahe ho? Awaaz toh alag lag rahi hai... jara apna poora naam bolo?",
+                    "Tum ro rahe ho? Typing style toh alag lag raha hai... jara apna poora naam likho?",
                     "Paise chahiye? Theek hai, par pehle tum apne bachpan ki yaad - wo wala password bolo.",
                     "Main abhi seedha police station ja raha hun beta, mat ghabraao. Kaunsa hospital hai ye batao pehle.",
                 ]
@@ -1063,7 +1071,7 @@ Reply with exactly ONE word:
             # CEO / BEC FRAUD CONTEXT
             elif any(word in scammer_lower for word in ['ceo', 'boss', 'urgent wire', 'confidential', 'meeting', 'vendor payment']):
                 ceo_fallbacks = [
-                    "Sir aap hi ho na? Ek minute, main aapko office landline pe call karke confirm karta hun.",
+                    "Sir aap hi ho na? Ek minute, main office ke official number se confirm karta hun.",
                     "Wire transfer? Theek hai sir, par accounts ke Sharma ji ki approval chahiye. Unse baat karwa dein?",
                     "Confidential hai? Okay sir, par company policy ke hisaab se mujhe 2 senior signatures chahiye.",
                     "Aapka email alag lag raha hai sir... kya ye sach mein aap ho? Main HR ko CC kar dun?",
@@ -1089,7 +1097,7 @@ Reply with exactly ONE word:
                     "DND activate karna hai? Theek hai, par pehle aap apni government ID bhejo.",
                     "Sim disconnect hogi? Par maine toh sab bill pay kiya hai... ye scam toh nahi?",
                     "Press 1 karne se kya hoga? Mujhe samjhao pehle, mujhe trust nahi ho raha.",
-                    "TRAI office se ho? Main abhi 1909 pe call karke verify karta hun, ek minute ruko.",
+                    "TRAI office se ho? Main abhi 1909 pe verify karta hun, ek minute ruko.",
                 ]
                 response = random.choice(trai_fallbacks)
 
@@ -1131,7 +1139,7 @@ Reply with exactly ONE word:
                 recharge_fallbacks = [
                     "Ram ma dir free recharge? Wah! Par link pe click karne se phone hang ho raha hai. Seedha top-up kar do?",
                     "3 months recharge muft? Par mera toh Jio ka sim hai, aapne Airtel likha hai... ye kaise hoga?",
-                    "Congratulations won free data? Acha ji, par recharge kab tak aayega? Mujhe video call karni hai.",
+                    "Congratulations won free data? Acha ji, par recharge kab tak aayega? Mujhe video proof bhejo.",
                     "Bhaiya ji link nahi chal raha... mera phone purana hai. Aap manual code bhej do recharge ka?",
                 ]
                 response = random.choice(recharge_fallbacks)
@@ -1163,7 +1171,7 @@ Reply with exactly ONE word:
                     "FASTag block ho gaya? Arre main toh abhi toll plaza pe khada hun... jaldi open karo!",
                     "KYC update toh maine pichle mahine bank mein kiya tha. Dobara kyu?",
                     "Wallet expire ho raha hai? Par usme abhi 500 rupaye balance hai... wo wapas milega?",
-                    "Link open nahi ho raha bhaiya... 1033 pe call karun kya official help ke liye?",
+                    "Link open nahi ho raha bhaiya... 1033 pe verify karun kya official help ke liye?",
                     "Aap NHAI se bol rahe ho? ID dikhao pehle, mujhe scam lag raha hai.",
                 ]
                 response = random.choice(fastag_fallbacks)
@@ -1216,14 +1224,14 @@ Reply with exactly ONE word:
                     "Prasad home delivery? Arre kitne din mein aayega? Cash on delivery hai kya?",
                     "Donation QR code bheja aapne? Par ye personal naam kyu dikha raha hai... Trust ka account nahi hai?",
                     "500 rupaye mein VIP entry? Itna sasta? Mujhe poore parivaar ke liye chahiye.",
-                    "Aap Ayodhya se bol rahe ho? Mandir ka live video call karke dikhao, phir vishwas karunga.",
+                    "Aap Ayodhya se bol rahe ho? Mandir ka live video bhej do, phir vishwas karunga.",
                 ]
                 response = random.choice(religious_fallbacks)
 
             # V5.2: HI MOM / FAMILY EMERGENCY SCAM CONTEXT
             elif any(word in scammer_lower for word in ['hi mom', 'hi mum', 'hi dad', 'new number', 'lost my phone', 'need money']):
                 hi_mom_fallbacks = [
-                    "Beta tu hai? Aaj toh teri awaaz alag lag rahi hai... tu theek toh hai na?",
+                    "Beta tu hai? Aaj toh tera typing style alag lag raha hai... tu theek toh hai na?",
                     "Naya number kyu liya? Purana waala toh 2 din pehle use kiya tha tune...",
                     "Paise chahiye urgent? Kitne chahiye? Par pehle wo bata - daddy ka birthday kab hai?",
                     "Bank access nahi hai? Toh GPay se bhej dun? Par teri photo wala account nahi dikh raha...",
@@ -1293,7 +1301,7 @@ Reply with exactly ONE word:
         # 🛡️ ULTIMATE SAFETY NET - Never return None
         if not response:
             logger.warning("CRITICAL: Response still None after all fallbacks. Forcing emergency response.")
-            response = "Haan ji bhaiya, main sun raha hun... aap phir se boliye? Network thoda slow hai."
+            response = "Haan ji bhaiya, main padh raha hun... aap phir se likhiye? Network thoda slow hai."
             agent_notes.append("EMERGENCY_FALLBACK_USED")
         
         # --- 🌐 REFINEMENT: Hinglish Post-Processing ---
