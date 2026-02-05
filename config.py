@@ -116,12 +116,12 @@ VECTORIZER_PATH = "models/tfidf_vectorizer.joblib"
 
 # Model training parameters
 MODEL_PARAMS = {
-    "n_estimators": 250,
-    "max_depth": 7,
+    "n_estimators": 50,  # Reduced from 250 for faster training
+    "max_depth": 5,  # Reduced from 7
     "learning_rate": 0.1,
-    "max_features": 10000,
-    "ngram_range": (1, 3),
-    "min_df": 2,
+    "max_features": 5000,  # Reduced from 10000
+    "ngram_range": (1, 2),  # Reduced from (1,3)
+    "min_df": 5,  # Increased from 2
     "max_df": 0.95,
     "test_size": 0.2,
     "random_state": 42,
