@@ -1,4 +1,4 @@
-# Virtual environments - Vercel builds its own
+# PRIORITY: Virtual environments must be excluded first
 venv/
 .venv/
 env/
@@ -6,35 +6,39 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Test files and datasets - not needed for production
+# Tests and debug files
 tests/
-.env.local
-.env.*.local
-
-# Large data files - CRITICAL
-*.csv
-*.json
-*.xlsx
-*.xls
-scammer_database.json
-*.jsonl
-extended_scam_dataset.json
-massive_*.csv
-additional_data.csv
-
-# Test results and logs
-*test_results*.txt
-api_test_results*.txt
 test_*.py
 *_test.py
 multi_turn_test_*.py
 advanced_scam_test.py
 diverse_scam_test.py
 indian_*.py
+debug_*.py
+diag_*.py
 
-# Development/documentation files
+# Large data files (CRITICAL)
+*.csv
+*.json
+*.xlsx
+*.xls
+*.jsonl
+additional_data.csv
+extended_scam_dataset.json
+massive_*.csv
+scammer_database.json
+
+# Test results and logs
+*test_results*.txt
+api_test_results*.txt
+evaluation_results.txt
+final_test_results.txt
+*.log
+
+# Development and documentation
 .git/
 .gitignore
+.github/
 *.md
 README*
 DEPLOYMENT*
@@ -44,6 +48,20 @@ PROJECT_*
 final_*
 marathon_*
 MASSIVE_*
+
+# IDE and OS files
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Build and cache
+.next/
+build/
+dist/
+.cache/
+*.cache
 
 # IDE files
 .vscode/
