@@ -1,0 +1,43 @@
+# Test files and datasets - not needed for production
+tests/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env.local
+.env.*.local
+
+# Large data files
+*.csv
+*.json
+*.xlsx
+*.xls
+
+# Test results and logs
+*test_results*.txt
+api_test_results*.txt
+*.jsonl
+test_results_*.txt
+
+# Development files
+.git/
+.gitignore
+*.md
+venv/
+.venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Build outputs
+/build
+/dist
+*.egg-info/
