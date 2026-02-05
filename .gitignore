@@ -46,8 +46,15 @@ fix_*.py
 *.pkl
 *.joblib
 
-# Large datasets (keep only small ones for deployment)
+# Large datasets - EXCLUDE ALL DATA FILES FROM REPO
 massive_200k_*.csv
+massive_20k_*.csv
+massive_5k_*.csv
+additional_data.csv
+extended_scam_dataset.json
+available_models.json
+*.csv
+*.json
 massive_20k_*.csv
 additional_data.csv
 
