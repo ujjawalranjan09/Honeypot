@@ -6,22 +6,38 @@ __pycache__/
 .env.local
 .env.*.local
 
-# Large data files
+# Large data files - CRITICAL
 *.csv
 *.json
 *.xlsx
 *.xls
+scammer_database.json
+*.jsonl
+extended_scam_dataset.json
+massive_*.csv
 
 # Test results and logs
 *test_results*.txt
 api_test_results*.txt
-*.jsonl
-test_results_*.txt
+test_*.py
+*_test.py
+multi_turn_test_*.py
+advanced_scam_test.py
+diverse_scam_test.py
+indian_*.py
 
-# Development files
+# Development/documentation files
 .git/
 .gitignore
 *.md
+README*
+DEPLOYMENT*
+ARCHITECTURE*
+MODULE_*
+PROJECT_*
+final_*
+marathon_*
+MASSIVE_*
 venv/
 .venv/
 env/
@@ -31,13 +47,23 @@ env/
 .idea/
 *.code-workspace
 
-# Temporary files
+# Generated files
+*.html
+Honeypot_Visual_Report.html
+*report*.md
+session_metrics.jsonl
+evaluation_results.txt
+api_test_results.txt
+final_test_results.txt
+
+# Temporary/build files
 *.tmp
 *.log
 .DS_Store
 Thumbs.db
-
-# Build outputs
 /build
 /dist
 *.egg-info/
+.vercel/
+.next/
+
