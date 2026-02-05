@@ -1,8 +1,13 @@
-# Test files and datasets - not needed for production
-tests/
+# Virtual environments - Vercel builds its own
+venv/
+.venv/
+env/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Test files and datasets - not needed for production
+tests/
 .env.local
 .env.*.local
 
@@ -15,6 +20,7 @@ scammer_database.json
 *.jsonl
 extended_scam_dataset.json
 massive_*.csv
+additional_data.csv
 
 # Test results and logs
 *test_results*.txt
@@ -38,9 +44,6 @@ PROJECT_*
 final_*
 marathon_*
 MASSIVE_*
-venv/
-.venv/
-env/
 
 # IDE files
 .vscode/
