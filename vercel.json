@@ -4,11 +4,9 @@
     { "source": "/(.*)", "destination": "/api/index.py" }
   ],
   "functions": {
-    "api/index.py": {
+    "api/**": {
       "maxDuration": 60,
-      "memory": 1024,
-      "includeFiles": "models/**",
-      "excludeFiles": "{tests/**,*.md,*.csv,*.json,*.txt,frontend/**,__pycache__/**,.git/**,venv/**,.venv/**,*.pyc,.env*}"
+      "memory": 1024
     }
   }
 }
