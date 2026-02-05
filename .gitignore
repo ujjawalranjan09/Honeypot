@@ -46,6 +46,37 @@ fix_*.py
 *.pkl
 *.joblib
 
+# Large datasets (keep only small ones for deployment)
+massive_200k_*.csv
+massive_20k_*.csv
+additional_data.csv
+
+# Test files and outputs
+tests/
+*_test.py
+test_*.py
+api_test_results*.txt
+evaluation_results*.txt
+final_test_results*.txt
+benchmark_*.py
+runner_*.py
+quick_*.py
+advanced_*.py
+diverse_*.py
+indian_*.py
+multi_turn_*.py
+final_validation_*.py
+generate_*.py
+retrain_*.py
+run_*.py
+
+# Documentation (keep only essential)
+*.md
+!README.md
+
+# Frontend only (if not needed)
+# frontend/
+
 # OS files
 .DS_Store
 Thumbs.db
