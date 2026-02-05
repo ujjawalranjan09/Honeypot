@@ -42,11 +42,38 @@ Certain patterns trigger immediate detection (Confidence = 0.85-1.0) regardless 
 
 | # | Tier | Kill Switch | Target Pattern | Confidence |
 |---|------|------------|----------------|------------|
-| 1-13 | V1-V3 | Phishing, Digital Arrest, Job Scams, etc. | 0.90-1.0 |
-| 14-19 | V4.0 | Pig Butchering, Honeytrap, Voice Clone, etc. | 0.90-1.0 |
-| 20-24 | V5.0 | Stock Fraud, Welfare, Rent, Recharge, Election | 0.85-0.98 |
-| 25-28 | V5.1 | Credit Rewards, FASTag, IT Refund, Religious | 0.90-0.98 |
-| 29-32 | V5.2 | Hi Mom, Aadhaar, SBI YONO, EPF | 0.90-0.98 |
+| 1 | V1-V3 | Phishing Link + Urgency/Threat | Suspicious link + urgency/fear | 1.00 |
+| 2 | V1-V3 | Digital Arrest | Authority + Skype/Video + Crime | 1.00 |
+| 3 | V1-V3 | Sextortion | Video recorded + Social Media + Threat | 1.00 |
+| 4 | V1-V3 | Financial Extortion | Payment intent + UPI/Financial + Threat | 0.95 |
+| 5 | V1-V3 | Courier Illegal Handover | Courier + Illegal item + Authority | 0.95 |
+| 6 | V1-V3 | Multi-Stage Scam | Known progression pattern detected | 0.85 |
+| 7 | V1-V3 | LIC/Insurance Prize | Congratulations + LIC/Policy/Bonus | 0.95 |
+| 8 | V1-V3 | Government Scheme Urgency | Scheme + Expire/Urgent | 0.90 |
+| 9 | V1-V3 | YouTube/Task Job Scam | Tasks/Reviews + Daily Income | 0.95 |
+| 10 | V1-V3 | RTO/Challan Scam | Vehicle # + Fine + Disconnect | 0.95 |
+| 11 | V1-V3 | SIM/eSIM Upgrade | Telecom + Blocked/Update/Share | 0.95 |
+| 12 | V1-V3 | Marketplace QR Scam | OLX + Scan to Receive + Amount | 0.98 |
+| 13 | V1-V3 | Predatory Loan App | Instant Loan + No Docs + Access | 0.90 |
+| 14 | V4.0 | Pig Butchering | Romance + Investment + Crypto | 1.00 |
+| 15 | V4.0 | Honeytrap Sextortion | Video call + Recording threat + Payment | 1.00 |
+| 16 | V4.0 | AI Voice Cloning | Family emergency + Money + Secrecy | 1.00 |
+| 17 | V4.0 | CEO/BEC Fraud | Impersonation + Urgent Transfer | 0.98 |
+| 18 | V4.0 | Viral Link Malware | Trending/Shocking + Link | 0.90 |
+| 19 | V4.0 | TRAI/DND Deactivation | TRAI + Disconnect + Press 1 | 0.90 |
+| 20 | V5.0 | Fake Stock Trading | IPO + Expert + Withdrawal Fee | 0.98 |
+| 21 | V5.0 | Welfare Scheme Fraud | PM-Kisan/Ayushman + Registration Fee | 0.95 |
+| 22 | V5.0 | Rent/Property Token Scam | Security deposit before visit + OLX | 0.95 |
+| 23 | V5.0 | Free Recharge Scam | Free + Recharge + Brand (Jio/Airtel) | 0.90 |
+| 24 | V5.0 | Election/Voter ID Fraud | Voter ID + Update + Mandatory | 0.85 |
+| 25 | V5.1 | Credit Card Reward Points | Points + Expire/Redeem | 0.95 |
+| 26 | V5.1 | FASTag KYC Update | FASTag + Deactivate/Update | 0.95 |
+| 27 | V5.1 | Income Tax Refund | Refund + Approve/Verify | 0.98 |
+| 28 | V5.1 | Religious/VIP Scam | Temple + VIP/Donation | 0.90 |
+| 29 | V5.2 | Hi Mom WhatsApp | New number + Urgent money + Secrecy | 0.98 |
+| 30 | V5.2 | Aadhaar Update Scam | Aadhaar + Update/Expired | 0.95 |
+| 31 | V5.2 | SBI YONO Block Scam | YONO + Blocked/Suspended | 0.95 |
+| 32 | V5.2 | EPF/PF Withdrawal | PF + Claim/Frozen | 0.90 |
 
 ### 4. Novel Scam Synergies & Tactical Diversity (V5.3)
 Specialized logic for identifying broad manipulation tactics without fixed categories:

@@ -115,9 +115,47 @@ A regex-heavy module designed to strip useful data from scammer messages.
 
 | Component | V4.0 | V5.0 |
 |-----------|------|------|
-| Kill Switches | 19 | **24** |
-| Scam Categories | 19 | **24** |
+| Kill Switches | 19 | **32** |
+| Scam Categories | 19 | **33** |
 | AI Fallback Responses | 68+ | **92+** |
 | Intelligence Fields | 8 | **10** (+ Stock App, IPO Info) |
 | Indian Environ. Hardening| Partial | **Full** (Stock, PMKisan, Rent) |
+
+---
+
+## Production & Deployment Notes (concise)
+
+- Model artifacts:
+  - `models/scam_detector.joblib` — trained classifier (inference only)
+  - `models/tfidf_vectorizer.joblib` — TF-IDF vectorizer matching training pipeline
+  - **Do not** include raw training datasets in production (they are excluded by `.vercelignore`).
+
+- Requirements split:
+  - `requirements.txt` (production): minimal runtime deps (FastAPI, uvicorn, scikit-learn, numpy, joblib, httpx).
+  - `requirements-dev.txt` (optional): heavy training deps (pandas, scipy, spacy, etc.). Keep these out of deployment bundles.
+
+- Training (local/CI):
+  - Use `train_all_datasets.py` locally or on a GPU-equipped CI instance.
+  - Example:
+    ```bash
+    python train_all_datasets.py --save-path=models/
+    ```
+  - After training, validate with `test_model.py` and commit only the generated `joblib` artifacts.
+
+- Inference best-practices:
+  - Lazy-import heavy modules used only for training (e.g., `pandas`) to keep function cold-start small.
+  - Keep model loading in a module-level lazy initializer so subsequent requests reuse the model.
+
+- Vercel-specific guidance:
+  - Use `vercel.json` `includeFiles` to ensure `models/**` is bundled and `excludeFiles` to keep datasets out.
+  - Enable `VERCEL_BUILDER_DEBUG=1` to inspect function sizes during debugging.
+
+- Health checks & tests:
+  - `GET /api/health` — basic liveness
+  - `python test_model.py` — checks model + vectorizer load and run sample predictions
+  - `python test_detector.py` — end-to-end detector pipeline test
+
+---
+
+If you want, I can also add a small `requirements-dev.txt` and a CI job to run training-only workflows (separate from production builds).
 
