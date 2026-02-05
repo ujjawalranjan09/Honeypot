@@ -6,6 +6,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from main import app
 
-# Vercel ASGI handler
-async def handler(request):
-    return app(request)
+# Vercel ASGI handler - export the FastAPI app directly
+# Vercel will handle the ASGI application automatically
+handler = app
