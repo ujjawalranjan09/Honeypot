@@ -1,50 +1,84 @@
-# Agentic Honey-Pot API for Scam Detection & Intelligence Extraction
+<div align="center">
 
-**Version 5.3 "Neural Sentinel"** - An AI-powered honeypot system that detects scam intent using **32 specialized Kill Switches** and **Tactical Diversity Tracking** to autonomously engage scammers and extract useful intelligence.
+# 🛡️ Honeypot — AI-Powered Scam Detection System
 
-## 🚀 Features
+**Version 5.3 "Neural Sentinel"**
 
-- **Hybrid Scam Detection**: ML + Rule-based + 32 Kill Switches for English, Hindi, and Hinglish
-- **Novel Scam Synergies**: Detects complex manipulation tactics (Authority Trap, Double Bait, Isolation Pressure)
-- **Strategy Pivot Detection**: Automatically identifies when a scammer shifts tactics or narrative mid-session
-- **Tactical Diversity Tracking**: Monitors unique social engineering markers to assess scammer sophistication
-- **Indian Environment Hardening**: Hi Mom, Aadhaar, SBI YONO, EPF, FASTag, and 28 more scam types
-- **33 Scam Categories**: Comprehensive coverage of the Indian cybercrime landscape including Novel Scams
-- **Universal Semantic Filter**: LLM intent analysis handles novel "grooming" scams missed by keyword filters
-- **Global Scammer Profiling**: Persistent cross-session tracking of repeat offenders (UPI, Phone, Crypto)
-- **"Fail-Fast" Multi-Model Fallback**: Ultra-robust queue with rotating API keys and fast fallback to 30+ contextual responses
-- **Intelligent Plateau Completion**: Automatically disengages when learning value peaks or scammer disengages
-- **Visual Intelligence Reports**: Premium cyberpunk-themed HTML dashboard
-- **2024-2025 Threat Intelligence**: Updated with the latest Indian cybercrime research and web-crawled trends
-- **Production Ready**: Deploys to Vercel serverless (<250 MB) with optimized dependencies
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![ML](https://img.shields.io/badge/ML-scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
+*An intelligent honeypot API that autonomously engages scammers, extracts threat intelligence, and protects users — built specifically for the Indian cybercrime landscape.*
+
+</div>
+
+---
+
+## 🎯 What This Project Does
+
+Honeypot is a **production-deployed FastAPI backend** that acts as a decoy to trap, analyze, and extract intelligence from cyber scammers. When a scammer sends a message, the system:
+
+1. **Detects scam intent** using a hybrid ML + rule-based engine (97.8% accuracy on 158,740 samples)
+2. **Responds like a victim** using AI personas to keep the scammer engaged
+3. **Extracts criminal intelligence** — UPI IDs, phone numbers, phishing links, bank accounts
+4. **Profiles repeat offenders** across sessions for persistent tracking
+5. **Generates visual threat reports** via a cyberpunk-themed HTML dashboard
+
+> 🏆 Built for the **Indian cybercrime landscape** — covers 33 scam categories including SBI YONO, Aadhaar, EPF, FASTag, UPI fraud, and more.
+
+---
+
+## ✨ Key Features
+
+- **32 Kill Switches** — specialized detection rules for English, Hindi, and Hinglish scams
+- **Hybrid Detection** — TF-IDF + Gradient Boosting ML + rule-based engine
+- **Multi-Model AI Agent** — 12 personas, 68+ fallback responses, rotating API keys
+- **Intelligence Extraction** — captures UPI IDs, phone numbers, phishing URLs, crypto wallets
+- **Strategy Pivot Detection** — identifies mid-session tactic changes by scammers
+- **Global Scammer Profiling** — cross-session tracking of repeat offenders
+- **Production Ready** — deployed to Vercel serverless (<250 MB)
+- **Novel Scam Synergies** — detects Authority Trap, Double Bait, Isolation Pressure tactics
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| API Framework | FastAPI + Uvicorn |
+| ML Engine | scikit-learn (TF-IDF + Gradient Boosting) |
+| LLM Integration | OpenRouter API (Llama 3.3 70B) |
+| Deployment | Vercel Serverless / Render.com |
+| Frontend Dashboard | Vanilla HTML/JS (cyberpunk theme) |
+| Testing | pytest |
+
+---
 
 ## 📦 Installation
 
 ```bash
-# Clone or navigate to project
-cd honeypot-project
+# Clone the repository
+git clone https://github.com/ujjawalranjan09/Honeypot.git
+cd Honeypot
 
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
+source venv/bin/activate  # Linux/Mac
+# OR: venv\Scripts\activate  # Windows
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env and add your API keys
 ```
 
 ## ⚙️ Configuration
 
-1. Copy `.env.example` to `.env`:
-```bash
-copy .env.example .env
-```
-
-2. Update `.env` with your keys:
+Edit `.env` with your keys:
 ```env
 HONEYPOT_API_KEY=your-secret-api-key-here
 OPENROUTER_API_KEY=your-openrouter-api-key-here
@@ -62,6 +96,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 The API will be available at `http://localhost:8000`
+
+---
 
 ## 📡 API Endpoints
 
@@ -98,25 +134,15 @@ GET /api/session/{session_id}
 X-API-Key: YOUR_SECRET_API_KEY
 ```
 
-### Complete Engagement (Trigger Callback)
-```http
-POST /api/complete/{session_id}
-X-API-Key: YOUR_SECRET_API_KEY
-```
-
-### Train Model
-```http
-POST /api/train
-X-API-Key: YOUR_SECRET_API_KEY
-```
-
 ### Get Statistics
 ```http
 GET /api/stats
 X-API-Key: YOUR_SECRET_API_KEY
 ```
 
-## 📊 Response Format (GUVI Compliant)
+---
+
+## 📊 Sample Response
 
 ```json
 {
@@ -129,7 +155,6 @@ X-API-Key: YOUR_SECRET_API_KEY
     "currentPhase": "compliance"
   },
   "extractedIntelligence": {
-    "bankAccounts": [],
     "upiIds": [],
     "phishingLinks": ["http://bank-secure.com"],
     "phoneNumbers": ["+919876543210"],
@@ -140,100 +165,72 @@ X-API-Key: YOUR_SECRET_API_KEY
 }
 ```
 
-## 🚀 Deployment
+---
 
-### Vercel (Serverless)
-The project is optimized for Vercel serverless functions (<250 MB).
+## 📈 Performance Metrics
 
-1. Push to GitHub (main branch)
-2. Import repository in Vercel
-3. Set environment variables:
-   - `HONEYPOT_API_KEY`
-   - `OPENROUTER_API_KEY`
-   - `OPENROUTER_MODEL` (optional)
-4. Deploy
+- **Model Accuracy**: 97.8% on training set (158,740 samples)
+- **Test Coverage**: 71.4% on diverse real-world test cases
+- **Model Size**: 0.33 MB (well under Vercel 250 MB limit)
+- **Scam Categories**: 33 categories covering Indian cybercrime landscape
+- **Kill Switches**: 32 specialized high-confidence detection rules
 
-**Note**: The `vercel.json` configuration handles serverless routing. Model files are auto-included.
-
-### Render.com (Alternative)
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed Render deployment instructions.
-
-## 🧪 Testing
-
-```bash
-# Run model prediction test
-python test_model.py
-
-# Run detector integration test
-python test_detector.py
-
-# Run end-to-end validation
-python final_validation_test.py
-```
-
-**Test Results** (as of Feb 2026):
-- Model accuracy: 97.8% on training set (158,740 samples)
-- Prediction tests: 71.4% on diverse test cases
-- Model size: 0.33 MB (well under Vercel 250 MB limit)
+---
 
 ## 🏗️ Project Structure
 
 ```
-honeypot-project/
-├── main.py                 # FastAPI application (entry point)
-├── config.py               # Configuration settings & thresholds
-├── models.py               # Pydantic data models
-├── scam_detector.py        # ML + rule-based detection engine
-├── intelligence_extractor.py  # Extract scam intel (UPI, links, phones)
-├── ai_agent.py             # AI persona engine with multi-model fallback
-├── session_manager.py      # Session lifecycle & state management
-├── logging_config.py       # Structured logging setup
-├── exceptions.py           # Custom exception classes
-├── requirements.txt        # Python dependencies (production)
-├── .env.example            # Environment variables template
-├── vercel.json             # Vercel serverless configuration
-├── .vercelignore           # Files to exclude from deployment
-├── api/
-│   └── index.py            # Vercel function handler
-├── models/                 # Trained ML artifacts (git-ignored locally, tracked in repo)
-│   ├── scam_detector.joblib
-│   └── tfidf_vectorizer.joblib
-├── frontend/               # Visual dashboard (HTML/JS)
-│   ├── index.html
-│   └── app.js
-├── tests/                  # Unit tests
-│   ├── test_api.py
-│   ├── test_detector.py
-│   └── test_extractor.py
-└── docs/                   # Documentation (optional)
-    ├── ARCHITECTURE.md
-    ├── DEPLOYMENT.md
-    └── MODULE_DOCUMENTATION.md
+honeypot/
+├── main.py                    # FastAPI application entry point
+├── config.py                  # Configuration & detection thresholds
+├── models.py                  # Pydantic data models
+├── scam_detector.py           # ML + rule-based detection engine
+├── intelligence_extractor.py  # Extract UPI IDs, phishing links, etc.
+├── ai_agent.py                # AI persona engine with multi-model fallback
+├── session_manager.py         # Session lifecycle & state management
+├── api/index.py               # Vercel serverless handler
+├── frontend/                  # Visual dashboard (HTML/JS)
+├── tests/                     # pytest test suite
+├── requirements.txt
+├── vercel.json
+└── .env.example
 ```
 
-## 🔧 Architecture (V4.0)
+---
 
-1. **Scam Detector** (19 Kill Switches):
-   - TF-IDF + Gradient Boosting ML model
-   - 19 specialized Kill Switches for high-confidence detection
-   - Categories: Pig Butchering, Honeytrap, Voice Cloning, CEO Fraud, etc.
+## 🚀 Deployment
 
-2. **AI Agent** (68+ Fallback Responses):
-   - 12 specialized personas for different scam scenarios
-   - Hinglish psychological counter-interrogation tactics
-   - Multi-model fallback with 30+ free-tier models
+### Vercel (Recommended)
+1. Push to GitHub
+2. Import repo in Vercel dashboard
+3. Set environment variables (`HONEYPOT_API_KEY`, `OPENROUTER_API_KEY`)
+4. Deploy
 
-3. **Intelligence Extractor** (Enhanced):
-   - Phone numbers (Indian format)
-   - UPI IDs (all banks)
-   - Bank account numbers
-   - Vehicle Numbers (Indian plates)
-   - Employee/Agent IDs
-   - Crypto Wallets
-   - Phishing links
+### Render.com
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
-4. **Session Manager**: Tracks conversation state and triggers GUVI callback
+---
+
+## 🧪 Testing
+
+```bash
+python final_validation_test.py   # End-to-end validation
+python quick_test.py              # Quick smoke test
+pytest tests/                     # Full test suite
+```
+
+---
 
 ## 📄 License
 
-MIT License
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**Built with ❤️ by [Ujjawal Ranjan](https://github.com/ujjawalranjan09) | RTU, Jaipur**
+
+*Fighting cybercrime, one scammer at a time.*
+
+</div>
