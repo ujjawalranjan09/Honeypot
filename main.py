@@ -40,9 +40,7 @@ from scam_detector import detector
 from ai_agent import reasoning_agent as agent
 from session_manager import session_manager
 from intelligence_extractor import extractor
-from response_schema import build_validated_response
 from core.pipeline import ResilientPipeline
-from core.latency_manager import latency_manager
 from exceptions import (
     HoneypotException,
     SessionNotFoundError,
