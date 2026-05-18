@@ -17,69 +17,9 @@ from models import (
     EngagementMetrics
 )
 from logging_config import get_logger
+from response_schema import build_validated_response
 
 logger = get_logger("honeypot.core.pipeline")
-
-def build_final_response(
-    conversation_id: str,
-    response_message: str,
-    is_scam: bool,
-    confidence: float,
-    scam_type: str,
-    indicators: List[str],
-    engagement_status: str,
-    intelligence: Dict[str, Any],
-    total_turns: int,
-    duration: float,
-    scammer_count: int,
-    agent_count: int,
-    intel_count: int
-) -> Dict[str, Any]:
-    """Helper to build a validated JSON response compliant with the API schema."""
-
-    # Ensure intelligence has all required fields for the schema
-    intel_obj = {
-        "bankAccounts": intelligence.get("bankAccounts", []),
-        "upiIds": intelligence.get("upiIds", []),
-        "phishingLinks": intelligence.get("phishingLinks", []) or intelligence.get("phishingUrls", []),
-        "phoneNumbers": intelligence.get("phoneNumbers", []),
-        "cryptoWallets": intelligence.get("cryptoWallets", []),
-        "suspiciousKeywords": intelligence.get("suspiciousKeywords", []),
-        "emailAddresses": intelligence.get("emailAddresses", []),
-        "personNames": intelligence.get("personNames", []),
-        "organizationNames": intelligence.get("organizationNames", []),
-    }
-
-    return {
-        "status": "success",
-        "conversationId": conversation_id,
-        "sessionId": conversation_id, # Added for compatibility
-        "scamDetected": is_scam,
-        "reply": response_message,
-        "scamDetection": {
-            "isScam": is_scam,
-            "confidence": round(confidence, 4),
-            "scamType": scam_type,
-            "indicators": indicators
-        },
-        # Added for compatibility with models.APIResponse
-        "scamClassification": {
-            "scamType": scam_type,
-            "confidence": round(confidence, 4),
-            "tacticsIdentified": indicators
-        },
-        "engagementStatus": engagement_status,
-        "extractedIntelligence": intel_obj,
-        "engagementMetrics": {
-            "totalTurns": total_turns,
-            "totalMessagesExchanged": total_turns, # Added for compatibility
-            "engagementDurationSeconds": round(duration, 2),
-            "scammerMessagesCount": scammer_count,
-            "agentMessagesCount": agent_count,
-            "intelligenceItemsExtracted": intel_count
-        },
-        "timestamp": datetime.utcnow().isoformat() + "Z"
-    }
 
 class ResilientPipeline:
     def __init__(self, detector, extractor, agent, session_mgr):
@@ -160,19 +100,39 @@ class ResilientPipeline:
         elif is_scam:
             engagement_status = "engaging"
 
-        # 8. Build and return response
-        return build_final_response(
-            conversation_id=conversation_id,
-            response_message=reply_text,
-            is_scam=is_scam,
-            confidence=confidence,
+        # 8. Build and return response using shared response schema
+        return build_validated_response(
+            status="success",
+            scam_detected=is_scam,
+            reply=reply_text,
+            session_id=conversation_id,
             scam_type=scam_type,
+            confidence=confidence,
             indicators=keywords,
-            engagement_status=engagement_status,
             intelligence=session.extracted_intelligence.model_dump(),
-            total_turns=session.messages_exchanged,
-            duration=duration,
-            scammer_count=session.messages_exchanged // 2,
-            agent_count=session.messages_exchanged // 2,
-            intel_count=intel_count
+            metrics={
+                "duration": round(duration, 2),
+                "total_messages": session.messages_exchanged,
+                "phase": engagement_status
+            },
+            agent_notes="; ".join(session.agent_notes[-3:]) if session.agent_notes else None
         )
+
+# Maintain build_final_response as an alias if needed by main.py exception handlers
+def build_final_response(**kwargs):
+    # Mapping old field names to new build_validated_response names
+    mapped = {
+        "scam_detected": kwargs.get("is_scam", False),
+        "confidence": kwargs.get("confidence", 0.0),
+        "scam_type": kwargs.get("scam_type", "General_Scam"),
+        "indicators": kwargs.get("indicators", []),
+        "session_id": kwargs.get("conversation_id", "unknown"),
+        "reply": kwargs.get("response_message", ""),
+        "intelligence": kwargs.get("intelligence", {}),
+        "metrics": {
+            "duration": kwargs.get("duration", 0),
+            "total_messages": kwargs.get("total_turns", 0),
+            "phase": kwargs.get("engagement_status", "error")
+        }
+    }
+    return build_validated_response(**mapped)

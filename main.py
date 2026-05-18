@@ -40,6 +40,8 @@ from scam_detector import detector
 from ai_agent import reasoning_agent as agent
 from session_manager import session_manager
 from intelligence_extractor import extractor
+from response_schema import build_validated_response
+from core.latency_manager import latency_manager
 from core.pipeline import ResilientPipeline
 from exceptions import (
     HoneypotException,
@@ -193,8 +195,8 @@ async def lifespan(app: FastAPI):
     
     logger.info("=" * 60)
     
-    # Train model if needed
-    if not detector.is_trained:
+    # Train model if needed (skip on Vercel to avoid cold start delay and read-only errors)
+    if not detector.is_trained and not os.environ.get("VERCEL"):
         logger.info("Training scam detection model...")
         detector.train_model()
     

@@ -6,12 +6,17 @@ import re
 import os
 import json
 from datetime import datetime
-import joblib
-import pandas as pd
 from typing import Tuple, List, Optional, Dict
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.model_selection import train_test_split
+
+# Robust ML Imports
+try:
+    import joblib
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.ensemble import GradientBoostingClassifier
+    from sklearn.model_selection import train_test_split
+    HAS_ML_DEPS = True
+except ImportError:
+    HAS_ML_DEPS = False
 
 from config import (
     SCAM_CONFIDENCE_THRESHOLD,
@@ -402,6 +407,10 @@ class ScamDetector:
     
     def _load_model(self):
         """Load pre-trained model if available"""
+        if not HAS_ML_DEPS:
+            logger.warning("ML dependencies not found. ML model will not be loaded.")
+            return
+
         try:
             if os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH):
                 self.model = joblib.load(MODEL_PATH)
@@ -414,7 +423,12 @@ class ScamDetector:
     
     def train_model(self, dataset_paths: List[str] = None):
         """Train the ML model on multiple scam datasets with enhanced processing"""
+        if not HAS_ML_DEPS:
+            logger.error("ML dependencies (scikit-learn, joblib) not found. Training aborted.")
+            return None
+
         try:
+            import pandas as pd
             if not dataset_paths:
                 dataset_paths = [
                     # Large datasets (preferred)
@@ -1098,7 +1112,7 @@ class ScamDetector:
         
         # Get ML model score if available
         ml_score = 0.0
-        if self.is_trained and self.model and self.vectorizer:
+        if HAS_ML_DEPS and self.is_trained and self.model and self.vectorizer:
             try:
                 # ✅ FIX: Concatenate last 2 messages from context for prediction
                 # This makes the ML model context-aware
