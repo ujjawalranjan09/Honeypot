@@ -555,6 +555,12 @@ class IntelligenceExtractor:
         
         return merged
     
+    def extract(self, text: str) -> ExtractedIntelligence:
+        """Alias for extract_from_conversation that accepts a single string message."""
+        from models import Message
+        msg_obj = Message(sender="scammer", text=text)
+        return self.extract_from_conversation([msg_obj])
+
     def calculate_quality_score(self, intel: ExtractedIntelligence) -> float:
         """Calculate overall intelligence quality score"""
         score = 0.0

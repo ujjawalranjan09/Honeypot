@@ -83,7 +83,7 @@ class TestMessageEndpoint:
         """Test that message endpoint requires authentication"""
         response = client.post("/api/message", json=sample_scam_message)
         
-        assert response.status_code == 422  # Missing header
+        assert response.status_code == 401  # Missing header
     
     def test_message_invalid_api_key(self, client, sample_scam_message):
         """Test rejection of invalid API key"""
@@ -221,7 +221,7 @@ class TestSessionEndpoint:
         """Test that session status requires auth"""
         response = client.get("/api/session/test-id")
         
-        assert response.status_code == 422  # Missing header
+        assert response.status_code == 401  # Missing header
     
     def test_session_not_found(self, client, api_key):
         """Test handling of non-existent session"""
@@ -265,7 +265,7 @@ class TestStatsEndpoint:
         """Test that stats endpoint requires auth"""
         response = client.get("/api/stats")
         
-        assert response.status_code == 422
+        assert response.status_code == 401
     
     def test_stats_returns_data(self, client, api_key):
         """Test that stats endpoint returns data"""
@@ -310,7 +310,7 @@ class TestTrainEndpoint:
         """Test that train endpoint requires auth"""
         response = client.post("/api/train")
         
-        assert response.status_code == 422
+        assert response.status_code == 401
 
 
 class TestOpenAPISchema:
